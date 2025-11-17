@@ -1,0 +1,11 @@
+USE DATABASE SHARVIL_UTP_2026_DASHBOARD;
+USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
+USE SCHEMA REF;
+
+CREATE OR REPLACE VIEW REF.V_CATEGORY_MAP_CURRENT 
+COMMENT = 'A copy of category map table having records that are currently valid/active.'
+AS
+SELECT *
+    EXCLUDE(valid_to)
+FROM REF.CATEGORY_MAP
+WHERE is_active = TRUE AND valid_to IS NULL;
