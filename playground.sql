@@ -336,12 +336,12 @@ SELECT * FROM SILVER.TOTAL_WITH_EXCPN_VIEW;
 
 SELECT * FROM SILVER.EXCEPTION_TARGETS;
 
-DROP TABLE IF EXISTS BRONZE.CARRYOVERS_V42;
 
 WITH exceptions_table AS (
     SELECT DISTINCT
         category,
         district_mpo_division,
+        fy,
         carryovers,
         total_targets,
         org_type,
@@ -362,6 +362,7 @@ cat_4r_12_table AS (
   SELECT DISTINCT 
     category,
     district_mpo_division,
+    fy,
     SUM(carryovers) AS carryovers,
     SUM(total_targets) AS total_targets,
     org_type,
@@ -369,7 +370,7 @@ cat_4r_12_table AS (
   FROM exceptions_table
   WHERE category IN ('4R', '12')
       AND (LOWER(org_type) = 'statewide' AND LOWER(expected_org_type) = 'district')
-  GROUP BY category, district_mpo_division, org_type, expected_org_type
+  GROUP BY category, district_mpo_division, fy, org_type, expected_org_type
 ),
 
 cat_10cr_table AS (
