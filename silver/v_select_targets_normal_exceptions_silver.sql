@@ -40,9 +40,23 @@ WITH exceptions_table AS (
 simple_table AS (
     SELECT DISTINCT *
     FROM exceptions_table
-    WHERE category IN ('2', '4R', '4U', '11ES')
+    WHERE category IN ('2', '4U', '11ES')
         AND (carryovers <> 0
         OR total_targets <> 0)
+),
+
+cat_4r_12_table AS (
+  SELECT DISTINCT 
+    category,
+    district_mpo_division,
+    SUM(carryovers) AS carryovers,
+    SUM(total_targets) AS total_targets,
+    org_type,
+    expected_org_type
+  FROM exceptions_table
+  WHERE category IN ('4R', '12')
+      AND (LOWER(org_type) = 'statewide' AND LOWER(expected_org_type) = 'district')
+  GROUP BY category, district_mpo_division, org_type, expected_org_type
 ),
 
 cat_10cr_table AS (
@@ -54,6 +68,8 @@ cat_10cr_table AS (
 )
 
 SELECT * FROM simple_table
+UNION ALL
+SELECT * FROM cat_4r_12_table
 UNION ALL
 SELECT * FROM cat_10cr_table
 ORDER BY category, district_mpo_division

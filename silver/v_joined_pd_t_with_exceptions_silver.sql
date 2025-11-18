@@ -13,7 +13,6 @@ SELECT
     total_targets,
     carryovers
 FROM SILVER.EXCEPTION_TARGETS
-WHERE category IN ('2', '4U', '11ES', '10CR')
 )
 
 SELECT * FROM SILVER.JOINED_PD_TARGET_VIEW

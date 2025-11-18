@@ -4,14 +4,7 @@ USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
 CREATE OR REPLACE VIEW SILVER.PD_TOTAL_PROGRAMMED
 COMMENT = 'This view creates a new attribute district_mpo_division and then calculates total programmed amount per category per district_mpo_division per estimated_fiscal_year.'
 AS
-WITH cat_select_pd AS (
-    SELECT *
-    FROM SILVER.PD_MPO_SHORT
-    WHERE category IN ('1', '2', '4U', '5', '6', '7', '8', '9', '10', '10CR', '11', '11ES', '11SF')
-        AND NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
-),
-
-pd_main AS (
+WITH pd_main AS (
 SELECT
     parent_category, 
     category, 
@@ -35,7 +28,8 @@ SELECT
     estimated_fiscal_year, 
     authorized_amount,
     org_scope
-FROM cat_select_pd
+FROM SILVER.PD_MPO_SHORT
+WHERE NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
 ),
 
 pd_final AS (

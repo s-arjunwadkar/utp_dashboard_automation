@@ -278,14 +278,15 @@ org_type vs expected_org_type = FALSE
 -- SELECT * FROM SILVER.PD_MPO_SHORT
 -- WHERE category ILIKE '%11%';
 
-WITH cat_select_pd AS (
-    SELECT *
-    FROM SILVER.PD_MPO_SHORT
-    WHERE category IN ('1', '2', '4U', '5', '6', '7', '8', '9', '10', '10CR', '11', '11ES', '11SF')
-        AND NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
-),
+-- WITH cat_select_pd AS (
+--     SELECT *
+--     FROM SILVER.PD_MPO_SHORT
+--     --WHERE category IN ('1', '2', '4R', '4U', '5', '6', '7', '8', '9', '10', '10CR', '11', '11ES', '11SF', '12', 'DA')
+--     --    AND NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
+--     WHERE NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
+-- ),
 
-pd_main AS (
+WITH pd_main AS (
 SELECT
     csj,
     parent_category, 
@@ -312,7 +313,8 @@ SELECT
     estimated_fiscal_year, 
     authorized_amount,
     org_scope
-FROM cat_select_pd
+FROM SILVER.PD_MPO_SHORT
+WHERE NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
 ),
 
 pd_final AS (
@@ -329,3 +331,58 @@ pd_final AS (
 )
 SELECT * FROM pd_final
 ORDER BY category, display_name, estimated_fiscal_year;
+
+SELECT * FROM SILVER.TOTAL_WITH_EXCPN_VIEW;
+
+SELECT * FROM SILVER.EXCEPTION_TARGETS;
+
+
+WITH exceptions_table AS (
+    SELECT DISTINCT
+        category,
+        district_mpo_division,
+        carryovers,
+        total_targets,
+        org_type,
+        expected_org_type
+    FROM SILVER.TARGETS_SCOPE
+    WHERE LOWER(org_type) <> LOWER(expected_org_type) 
+),
+
+simple_table AS (
+    SELECT DISTINCT *
+    FROM exceptions_table
+    WHERE category IN ('2', '4U', '11ES')
+        AND (carryovers <> 0
+        OR total_targets <> 0)
+),
+
+cat_4r_12_table AS (
+  SELECT DISTINCT 
+    category,
+    district_mpo_division,
+    SUM(carryovers) AS carryovers,
+    SUM(total_targets) AS total_targets,
+    org_type,
+    expected_org_type
+  FROM exceptions_table
+  WHERE category IN ('4R', '12')
+      AND (LOWER(org_type) = 'statewide' AND LOWER(expected_org_type) = 'district')
+  GROUP BY category, district_mpo_division, org_type, expected_org_type
+),
+
+cat_10cr_table AS (
+    SELECT DISTINCT
+        *
+    FROM exceptions_table
+    WHERE category = '10CR' 
+        AND (LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'statewide')
+)
+
+SELECT * FROM simple_table
+UNION ALL
+SELECT * FROM cat_4r_12_table
+UNION ALL
+SELECT * FROM cat_10cr_table
+ORDER BY category, district_mpo_division
+;
