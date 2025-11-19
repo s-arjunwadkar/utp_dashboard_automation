@@ -29,6 +29,7 @@ WITH exceptions_table AS (
     SELECT DISTINCT
         category,
         district_mpo_division,
+        fy,
         carryovers,
         total_targets,
         org_type,
@@ -49,6 +50,7 @@ cat_4r_12_table AS (
   SELECT DISTINCT 
     category,
     district_mpo_division,
+    fy,
     SUM(carryovers) AS carryovers,
     SUM(total_targets) AS total_targets,
     org_type,
@@ -56,7 +58,7 @@ cat_4r_12_table AS (
   FROM exceptions_table
   WHERE category IN ('4R', '12')
       AND (LOWER(org_type) = 'statewide' AND LOWER(expected_org_type) = 'district')
-  GROUP BY category, district_mpo_division, org_type, expected_org_type
+  GROUP BY category, district_mpo_division, fy, org_type, expected_org_type
 ),
 
 cat_10cr_table AS (
@@ -72,7 +74,7 @@ UNION ALL
 SELECT * FROM cat_4r_12_table
 UNION ALL
 SELECT * FROM cat_10cr_table
-ORDER BY category, district_mpo_division
+ORDER BY category, district_mpo_division, fy
 ;
 
 -- SELECT * FROM SILVER.NORMAL_TARGETS;

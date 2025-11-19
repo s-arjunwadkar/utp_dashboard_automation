@@ -333,6 +333,8 @@ SELECT * FROM pd_final
 ORDER BY category, display_name, estimated_fiscal_year;
 
 SELECT * FROM SILVER.TOTAL_WITH_EXCPN_VIEW;
+SELECT * FROM SILVER.JOINED_PD_TARGET_VIEW;
+SELECT * FROM SILVER.PD_TOTAL_PROGRAMMED;
 
 SELECT * FROM SILVER.EXCEPTION_TARGETS;
 
@@ -379,12 +381,23 @@ cat_10cr_table AS (
     FROM exceptions_table
     WHERE category = '10CR' 
         AND (LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'statewide')
+),
+
+union_tables AS (
+  SELECT * FROM simple_table
+  UNION ALL
+  SELECT * FROM cat_4r_12_table
+  UNION ALL
+  SELECT * FROM cat_10cr_table
+  ORDER BY category, district_mpo_division
 )
 
-SELECT * FROM simple_table
-UNION ALL
-SELECT * FROM cat_4r_12_table
-UNION ALL
-SELECT * FROM cat_10cr_table
-ORDER BY category, district_mpo_division
+SELECT
+    category,
+    district_mpo_division,
+    fy,
+    0 AS total_authorized,
+    total_targets,
+    carryovers
+FROM union_tables
 ;

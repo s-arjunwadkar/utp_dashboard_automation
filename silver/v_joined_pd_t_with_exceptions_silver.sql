@@ -8,7 +8,7 @@ WITH exceptions AS (
 SELECT
     category,
     district_mpo_division,
-    2026 AS fy,
+    fy,
     0 AS total_authorized,
     total_targets,
     carryovers
