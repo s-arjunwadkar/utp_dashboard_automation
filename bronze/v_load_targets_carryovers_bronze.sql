@@ -2,7 +2,7 @@ USE DATABASE SHARVIL_UTP_2026_DASHBOARD;
 USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
 
 CREATE OR REPLACE VIEW BRONZE.TARGETS_CARRYOVER_FILE
-COMMENT = 'This is the carryovers file that we get each week. Latest version: V43'
+COMMENT = 'This is the carryovers file that we get each week.'
 AS
 SELECT
     category,
@@ -18,5 +18,5 @@ SELECT
     fy_2033,
     fy_2034,
     fy_2035
-FROM BRONZE.CARRYOVERS_V43
+FROM BRONZE.CARRYOVERS
 WHERE district_mpo_division <> 'TOTAL';

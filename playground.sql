@@ -286,51 +286,51 @@ org_type vs expected_org_type = FALSE
 --     WHERE NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
 -- ),
 
-WITH pd_main AS (
-SELECT
-    csj,
-    parent_category, 
-    category, 
-    district_division_abbr,
-    district_division,
-    mpo_short,
-    CASE
-        WHEN LOWER(org_scope) = 'district' THEN CONCAT(district_division_abbr, ' - ', district_division)
-        WHEN LOWER(org_scope) = 'mpo' AND mpo_short IS NOT NULL THEN CONCAT(district_division_abbr, ' - ', mpo_short)
-        WHEN category = '6' THEN 'Bridge Division'
-        WHEN category = '8' THEN 'Traffic Division'
-        WHEN category = '9' AND (work_program_code ILIKE '%FX' OR pid_code IN ('BRA', 'TE', 'SRS')) THEN 'Transportation Alternatives Flex Program'
-        WHEN category = '9' AND work_program_code ILIKE '%JA' THEN 'Transportation Alternatives Flex IIJA Program'
-        WHEN category = '9' AND work_program_code ILIKE '%TP' AND (pid_code != 'TM' OR pid_code IS NULL) THEN 'Transportation Alternatives Program - Non-TMAs'
-        WHEN category = '10' THEN 'Supplemental Transportation Projects'
-        WHEN category = '10CR' AND work_program_code = '10CBNS' THEN 'Carbon Reduction Program - Statewide'
-        WHEN category = '11' AND work_program_code = '16B11' THEN 'Rider 11B Program'
-        WHEN category = '11' AND work_program_code = 'COCO' THEN 'Cost Overruns/Change Orders'
-        ELSE district_division
-    END AS district_mpo_division,
-    work_program_code,
-    pid_code,
-    estimated_fiscal_year, 
-    authorized_amount,
-    org_scope
-FROM SILVER.PD_MPO_SHORT
-WHERE NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
-),
+-- WITH pd_main AS (
+-- SELECT
+--     csj,
+--     parent_category, 
+--     category, 
+--     district_division_abbr,
+--     district_division,
+--     mpo_short,
+--     CASE
+--         WHEN LOWER(org_scope) = 'district' THEN CONCAT(district_division_abbr, ' - ', district_division)
+--         WHEN LOWER(org_scope) = 'mpo' AND mpo_short IS NOT NULL THEN CONCAT(district_division_abbr, ' - ', mpo_short)
+--         WHEN category = '6' THEN 'Bridge Division'
+--         WHEN category = '8' THEN 'Traffic Division'
+--         WHEN category = '9' AND (work_program_code ILIKE '%FX' OR pid_code IN ('BRA', 'TE', 'SRS')) THEN 'Transportation Alternatives Flex Program'
+--         WHEN category = '9' AND work_program_code ILIKE '%JA' THEN 'Transportation Alternatives Flex IIJA Program'
+--         WHEN category = '9' AND work_program_code ILIKE '%TP' AND (pid_code != 'TM' OR pid_code IS NULL) THEN 'Transportation Alternatives Program - Non-TMAs'
+--         WHEN category = '10' THEN 'Supplemental Transportation Projects'
+--         WHEN category = '10CR' AND work_program_code = '10CBNS' THEN 'Carbon Reduction Program - Statewide'
+--         WHEN category = '11' AND work_program_code = '16B11' THEN 'Rider 11B Program'
+--         WHEN category = '11' AND work_program_code = 'COCO' THEN 'Cost Overruns/Change Orders'
+--         ELSE district_division
+--     END AS district_mpo_division,
+--     work_program_code,
+--     pid_code,
+--     estimated_fiscal_year, 
+--     authorized_amount,
+--     org_scope
+-- FROM SILVER.PD_MPO_SHORT
+-- WHERE NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
+-- ),
 
-pd_final AS (
-    SELECT
-        *,
-        CASE
-        WHEN district_mpo_division IN ('BMT - HGAC MPO', 'HOU - HGAC MPO')
-          THEN 'HOU/BMT - HGAC MPO'
-        WHEN district_mpo_division IN ('DAL - NCTCOG MPO', 'FTW - NCTCOG MPO', 'PAR - NCTCOG MPO')
-          THEN 'DAL/FTW/PAR - NCTCOG MPO'
-        ELSE district_mpo_division
-      END AS display_name
-    FROM pd_main
-)
-SELECT * FROM pd_final
-ORDER BY category, display_name, estimated_fiscal_year;
+-- pd_final AS (
+--     SELECT
+--         *,
+--         CASE
+--         WHEN district_mpo_division IN ('BMT - HGAC MPO', 'HOU - HGAC MPO')
+--           THEN 'HOU/BMT - HGAC MPO'
+--         WHEN district_mpo_division IN ('DAL - NCTCOG MPO', 'FTW - NCTCOG MPO', 'PAR - NCTCOG MPO')
+--           THEN 'DAL/FTW/PAR - NCTCOG MPO'
+--         ELSE district_mpo_division
+--       END AS display_name
+--     FROM pd_main
+-- )
+-- SELECT * FROM pd_final
+-- ORDER BY category, display_name, estimated_fiscal_year;
 
 SELECT * FROM SILVER.TOTAL_WITH_EXCPN_VIEW;
 SELECT * FROM SILVER.JOINED_PD_TARGET_VIEW;
@@ -339,65 +339,67 @@ SELECT * FROM SILVER.PD_TOTAL_PROGRAMMED;
 SELECT * FROM SILVER.EXCEPTION_TARGETS;
 
 
-WITH exceptions_table AS (
-    SELECT DISTINCT
-        category,
-        district_mpo_division,
-        fy,
-        carryovers,
-        total_targets,
-        org_type,
-        expected_org_type
-    FROM SILVER.TARGETS_SCOPE
-    WHERE LOWER(org_type) <> LOWER(expected_org_type) 
-),
+-- WITH exceptions_table AS (
+--     SELECT DISTINCT
+--         category,
+--         district_mpo_division,
+--         fy,
+--         carryovers,
+--         total_targets,
+--         org_type,
+--         expected_org_type
+--     FROM SILVER.TARGETS_SCOPE
+--     WHERE LOWER(org_type) <> LOWER(expected_org_type) 
+-- ),
 
-simple_table AS (
-    SELECT DISTINCT *
-    FROM exceptions_table
-    WHERE category IN ('2', '4U', '11ES')
-        AND (carryovers <> 0
-        OR total_targets <> 0)
-),
+-- simple_table AS (
+--     SELECT DISTINCT *
+--     FROM exceptions_table
+--     WHERE category IN ('2', '4U', '11ES')
+--         AND (carryovers <> 0
+--         OR total_targets <> 0)
+-- ),
 
-cat_4r_12_table AS (
-  SELECT DISTINCT 
-    category,
-    district_mpo_division,
-    fy,
-    SUM(carryovers) AS carryovers,
-    SUM(total_targets) AS total_targets,
-    org_type,
-    expected_org_type
-  FROM exceptions_table
-  WHERE category IN ('4R', '12')
-      AND (LOWER(org_type) = 'statewide' AND LOWER(expected_org_type) = 'district')
-  GROUP BY category, district_mpo_division, fy, org_type, expected_org_type
-),
+-- cat_4r_12_table AS (
+--   SELECT DISTINCT 
+--     category,
+--     district_mpo_division,
+--     fy,
+--     SUM(carryovers) AS carryovers,
+--     SUM(total_targets) AS total_targets,
+--     org_type,
+--     expected_org_type
+--   FROM exceptions_table
+--   WHERE category IN ('4R', '12')
+--       AND (LOWER(org_type) = 'statewide' AND LOWER(expected_org_type) = 'district')
+--   GROUP BY category, district_mpo_division, fy, org_type, expected_org_type
+-- ),
 
-cat_10cr_table AS (
-    SELECT DISTINCT
-        *
-    FROM exceptions_table
-    WHERE category = '10CR' 
-        AND (LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'statewide')
-),
+-- cat_10cr_table AS (
+--     SELECT DISTINCT
+--         *
+--     FROM exceptions_table
+--     WHERE category = '10CR' 
+--         AND (LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'statewide')
+-- ),
 
-union_tables AS (
-  SELECT * FROM simple_table
-  UNION ALL
-  SELECT * FROM cat_4r_12_table
-  UNION ALL
-  SELECT * FROM cat_10cr_table
-  ORDER BY category, district_mpo_division
-)
+-- union_tables AS (
+--   SELECT * FROM simple_table
+--   UNION ALL
+--   SELECT * FROM cat_4r_12_table
+--   UNION ALL
+--   SELECT * FROM cat_10cr_table
+--   ORDER BY category, district_mpo_division
+-- )
 
-SELECT
-    category,
-    district_mpo_division,
-    fy,
-    0 AS total_authorized,
-    total_targets,
-    carryovers
-FROM union_tables
-;
+-- SELECT
+--     category,
+--     district_mpo_division,
+--     fy,
+--     0 AS total_authorized,
+--     total_targets,
+--     carryovers
+-- FROM union_tables
+-- ;
+
+SELECT * FROM BRONZE.CARRYOVERS;
