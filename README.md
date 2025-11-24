@@ -4,33 +4,45 @@ This repository contains all development assets for the end-to-end data pipeline
 
 The goal is to maintain a reproducible, version-controlled workflow for ingestion (Bronze), transformations (Silver), and final models/views (Gold).
 
-File naming convention:
-"<type>_<operation_type>_<name>_<stage>.<extension>"
+--------------------------------------------------------------------------------
 
-where:
-    - type: 
-        dt - Dynamic Table
-        t  - Table
-        v  - View
-        i  - Initialize
-        ff - File Format
-    - operation_type:
-        join
-        filter
-        init
-        aggregate
-        select
-        load
-        insert
-    - name: The name you want to give to the file.
-    - stage:
-        bronze
-        silver
-        gold
-        ref - reference
-    - extension:
-        sql    - sql
-        python - py
+## File Naming Convention
+
+**Pattern:**
+
+<type>_<operation_type>_<name>_<stage>.<extension>
+
+### Where:
+
+#### type
+- dt – Dynamic Table
+- t – Table
+- v – View
+- i – Initialize
+- ff – File Format
+
+#### operation_type
+- join
+- filter
+- init
+- aggregate
+- select
+- load
+- insert
+
+#### name
+A descriptive identifier for the file  
+(e.g., project_details, carryovers, targets_scope)
+
+#### stage
+- bronze
+- silver
+- gold
+- ref — reference tables
+
+#### extension
+- sql
+- py
 
 --------------------------------------------------------------------------------
 
@@ -106,7 +118,7 @@ If keyring is not installed, you may see warnings—this is safe.
 ### Purpose
 Load weekly carryover CSV (e.g., 2026 Carryover - TTI-v44.csv) into:
 
-SHARVIL_UTP_2026_DASHBOARD.BRONZE.CARRYOVERS
+DASHBOARD.BRONZE.CARRYOVERS
 
 This replaces manual Snowsight uploads.
 
@@ -200,7 +212,7 @@ BronzeLoader class:
 
 ## Reusing Framework for Another Bronze Table
 
-Create a new Python script and call:
+To ingest another table/file in the future, create a new Python script and call:
 
 loader.load_file(
     local_file="path/to/new.csv",
@@ -208,12 +220,12 @@ loader.load_file(
     file_format="BRONZE.NEW_FILE_FORMAT",
 )
 
-No need to rewrite framework logic.
+No need to rewrite the framework logic.
 
 --------------------------------------------------------------------------------
 
 ## Maintainer
 
-Sharvil Arjunwadkar
-Data Engineer / Data Scientist
+Sharvil Arjunwadkar  
+Data Engineer / Data Scientist  
 Texas A&M Transportation Institute
