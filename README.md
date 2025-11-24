@@ -92,14 +92,14 @@ Install locally:
 - VS Code (optional)
 - Snowflake Connector for Python:
 
-'''
+```
 pip install snowflake-connector-python
-'''
+```
 
 Optional (to reduce SSO pop-ups):
-'''
+```
 pip install "snowflake-connector-python[secure-local-storage]"
-'''
+```
 
 --------------------------------------------------------------------------------
 
@@ -161,7 +161,7 @@ C:\Users\<you>\Downloads\carryover_files\
 
 2. Update local_file path inside ingest_carryovers_file_bronze.py:
 
-'''python
+```python
 loader.load_file(
     local_file=r"C:\Users\...\2026 Carryover - TTI-v44.csv",  # Your file path
     table_name="CARRYOVERS",                                  # Table name in Snowflake to stage and copy into
@@ -169,14 +169,14 @@ loader.load_file(
     truncate_before_load=True,                                # If you want to truncate (=TRUE) or append (=FALSE)
     on_error="ABORT_STATEMENT",
 )
-'''
+```
 
 3. Run:
 
-'''
+```
 cd snowflake-dev/bronze
 python ingest_carryovers_file_bronze.py
-'''
+```
 
 4. Script behavior:
 - Browser opens for SSO
@@ -190,9 +190,9 @@ python ingest_carryovers_file_bronze.py
 --------------------------------------------------------------------------------
 
 ## Running Transformation Pipeline (Bronze → Silver)
-'''
+```
 snowsql -f run_pipeline.sql
-'''
+```
 
 Or run !source scripts manually.
 
@@ -201,9 +201,9 @@ Or run !source scripts manually.
 ## Bronze Loader Framework – Details
 
 Located at:
-'''
+```
 bronze/file_loader_framework_bronze.py
-'''
+```
 
 ### Components
 
@@ -225,13 +225,13 @@ BronzeLoader class:
 
 To ingest another table/file in the future, create a new Python script and call:
 
-'''python
+```python
 loader.load_file(
     local_file="path/to/new.csv",
     table_name="NEW_BRONZE_TABLE",
     file_format="BRONZE.NEW_FILE_FORMAT",
 )
-'''
+```
 
 No need to rewrite the framework logic.
 
@@ -240,5 +240,4 @@ No need to rewrite the framework logic.
 ## Maintainer
 
 Sharvil Arjunwadkar \
-Data Engineer / Data Scientist \ 
-Texas A&M Transportation Institute
+Data Scientist - Texas A&M Transportation Institute
