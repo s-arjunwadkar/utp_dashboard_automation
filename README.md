@@ -10,15 +10,15 @@ The goal is to maintain a reproducible, version-controlled workflow for ingestio
 
 **Pattern:**
 
-<type>_<operation_type>_<name>_<stage>.<extension>
+type_operation_type_name_stage.extension
 
 ### Where:
 
 #### type
 - dt – Dynamic Table
-- t – Table
-- v – View
-- i – Initialize
+- t  – Table
+- v  – View
+- i  – Initialize
 - ff – File Format
 
 #### operation_type
@@ -41,8 +41,8 @@ A descriptive identifier for the file
 - ref — reference tables
 
 #### extension
-- sql
-- py
+- sql - SQL
+- py  - Python
 
 --------------------------------------------------------------------------------
 
@@ -92,10 +92,14 @@ Install locally:
 - VS Code (optional)
 - Snowflake Connector for Python:
 
+'''
 pip install snowflake-connector-python
+'''
 
 Optional (to reduce SSO pop-ups):
+'''
 pip install "snowflake-connector-python[secure-local-storage]"
+'''
 
 --------------------------------------------------------------------------------
 
@@ -151,24 +155,28 @@ This logic lives in file_loader_framework_bronze.py.
 
 ## How to Run the Weekly Carryover Ingestion
 
-1. Save latest carryover file to:
+1. Save latest carryover file in local system and note its path like:
 
 C:\Users\<you>\Downloads\carryover_files\
 
 2. Update local_file path inside ingest_carryovers_file_bronze.py:
 
+'''python
 loader.load_file(
-    local_file=r"C:\Users\<you>\Downloads\carryover_files\2026 Carryover - TTI-v44.csv",
-    table_name="CARRYOVERS",
-    file_format="BRONZE.CARRYOVERS_CSV_FF",
-    truncate_before_load=True,
+    local_file=r"C:\Users\...\2026 Carryover - TTI-v44.csv",  # Your file path
+    table_name="CARRYOVERS",                                  # Table name in Snowflake to stage and copy into
+    file_format="BRONZE.CARRYOVERS_CSV_FF",                   # File Format define in Snowflake
+    truncate_before_load=True,                                # If you want to truncate (=TRUE) or append (=FALSE)
     on_error="ABORT_STATEMENT",
 )
+'''
 
 3. Run:
 
+'''
 cd snowflake-dev/bronze
 python ingest_carryovers_file_bronze.py
+'''
 
 4. Script behavior:
 - Browser opens for SSO
@@ -182,8 +190,9 @@ python ingest_carryovers_file_bronze.py
 --------------------------------------------------------------------------------
 
 ## Running Transformation Pipeline (Bronze → Silver)
-
+'''
 snowsql -f run_pipeline.sql
+'''
 
 Or run !source scripts manually.
 
@@ -192,7 +201,9 @@ Or run !source scripts manually.
 ## Bronze Loader Framework – Details
 
 Located at:
+'''
 bronze/file_loader_framework_bronze.py
+'''
 
 ### Components
 
@@ -214,11 +225,13 @@ BronzeLoader class:
 
 To ingest another table/file in the future, create a new Python script and call:
 
+'''python
 loader.load_file(
     local_file="path/to/new.csv",
     table_name="NEW_BRONZE_TABLE",
     file_format="BRONZE.NEW_FILE_FORMAT",
 )
+'''
 
 No need to rewrite the framework logic.
 
@@ -226,6 +239,6 @@ No need to rewrite the framework logic.
 
 ## Maintainer
 
-Sharvil Arjunwadkar  
-Data Engineer / Data Scientist  
+Sharvil Arjunwadkar \
+Data Engineer / Data Scientist \ 
 Texas A&M Transportation Institute
