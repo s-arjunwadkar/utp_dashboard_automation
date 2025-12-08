@@ -6,7 +6,7 @@ def main():
     # 1. Configure Snowflake connection
     # ---------------------------------------------
     config = SnowflakeConfig(
-        account="TAM-TI",
+        account="TAM-PPM",
         user="S-ARJUNWADKAR@TTI.TAMU.EDU",
         warehouse="SHARVIL_UTP_DASHBOARD",
         database="SHARVIL_UTP_2026_DASHBOARD",
