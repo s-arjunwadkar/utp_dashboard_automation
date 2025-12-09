@@ -16,6 +16,7 @@ CREATE OR REPLACE TABLE BRONZE.CARRYOVERS (
     FY_2032                FLOAT,
     FY_2033                FLOAT,
     FY_2034                FLOAT,
-    FY_2035                FLOAT
+    FY_2035                FLOAT,
+    INGESTED_AT            TIMESTAMP_NTZ
 )
 COMMENT = 'Initilize the carryovers table to load data from the new carryovers file each week.';

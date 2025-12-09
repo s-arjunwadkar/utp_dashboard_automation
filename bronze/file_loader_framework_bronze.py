@@ -80,6 +80,135 @@ class BronzeLoader:
         cur.execute(f"USE WAREHOUSE {self.config.warehouse};")
         cur.execute(f"USE DATABASE {self.config.database};")
         cur.execute(f"USE SCHEMA {self.config.schema};")
+    
+    def _ensure_table_exists(self, cur, table_name: str, init_sql_path: Optional[str] = None):
+        """
+        Check if the target table exists; if not, optionally run an init SQL script
+        (e.g. a CREATE TABLE statement).
+
+        Parameters
+        ----------
+        cur : cursor
+            Active Snowflake cursor.
+        table_name : str
+            Table name WITHOUT schema (schema comes from config).
+        init_sql_path : str, optional
+            Path to a .sql file that creates the table (and related objects).
+        """
+        db = self.config.database
+        schema = self.config.schema
+        table_upper = table_name.upper()
+
+        logger.info(f"Checking if table {db}.{schema}.{table_upper} exists...")
+
+        check_sql = """
+            SELECT 1
+            FROM {db}.INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_CATALOG = %s
+              AND TABLE_SCHEMA  = %s
+              AND TABLE_NAME    = %s
+            LIMIT 1;
+        """.format(db=db)
+
+        cur.execute(check_sql, (db, schema, table_upper))
+        exists = cur.fetchone() is not None
+
+        if exists:
+            logger.info(f"Table {db}.{schema}.{table_upper} already exists. Skipping init script.")
+            return
+
+        logger.warning(f"Table {db}.{schema}.{table_upper} does NOT exist.")
+
+        if not init_sql_path:
+            raise RuntimeError(
+                f"Table {db}.{schema}.{table_upper} is missing and no init_sql_path was provided."
+            )
+
+        logger.info(f"Running init SQL script to create it: {init_sql_path}")
+
+        # Very simple splitter: assumes your .sql file has 1 or a few ';'-terminated statements
+        with open(init_sql_path, "r", encoding="utf-8") as f:
+            sql_script = f.read()
+
+        statements = [s.strip() for s in sql_script.split(";") if s.strip()]
+        for stmt in statements:
+            logger.debug(f"Executing init statement:\n{stmt}")
+            cur.execute(stmt)
+
+        logger.info(f"Init script {init_sql_path} executed. Table {db}.{schema}.{table_upper} should now exist.")
+
+    def _build_copy_with_ingested_at(self, cur, table_name: str, file_format: str, on_error: str,) -> str:
+        """
+        Build a COPY INTO statement that:
+          - Reads from @%TABLE using the provided FILE_FORMAT
+          - Maps all file columns ($1..$N-1) to table columns
+          - Appends CURRENT_TIMESTAMP() as INGESTED_AT (last column)
+
+        Assumptions:
+          - Target table's last column is INGESTED_AT
+          - File has exactly (number_of_table_columns - 1) columns
+        """
+        db = self.config.database
+        schema = self.config.schema
+        table_upper = table_name.upper()
+        fq_table = f"{schema}.{table_name}"
+
+        # Fetch table columns in order
+        cur.execute(
+            f"""
+            SELECT COLUMN_NAME
+            FROM {db}.INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_CATALOG = %s
+              AND TABLE_SCHEMA  = %s
+              AND TABLE_NAME    = %s
+            ORDER BY ORDINAL_POSITION
+            """,
+            (db, schema, table_upper),
+        )
+
+        cols = [row[0] for row in cur.fetchall()]
+
+        if not cols:
+            raise RuntimeError(
+                f"No columns found for table {db}.{schema}.{table_upper}"
+            )
+
+        # Validate last column
+        last_col = cols[-1].upper()
+        if last_col != "INGESTED_AT":
+            raise RuntimeError(
+            f"Timestamp-append pattern requires last column to be INGESTED_AT, "
+            f"but last column is {last_col} for {db}.{schema}.{table_upper}."
+        )
+
+        num_table_cols = len(cols)
+        num_file_cols = num_table_cols - 1 # all but INGESTED_AT
+
+        if num_file_cols < 1:
+            raise RuntimeError(
+                f"Table {db}.{schema}.{table_upper} must have at least 2 columns "
+                "(data columns + INGESTED_AT)."
+            )
+
+        # Build $1, $2, ..., $N-1 expressions
+        file_exprs = [f"${i}" for i in range(1, num_file_cols + 1)]
+
+        # Add CURRENT_TIMESTAMP() for the last column
+        select_exprs = file_exprs + ["CURRENT_TIMESTAMP()::TIMESTAMP_NTZ"]
+        select_clause = ",\n    ".join(select_exprs)
+
+        copy_sql = f"""
+            COPY INTO {fq_table}
+            FROM (
+                SELECT
+                    {select_clause}
+                FROM @%{table_name} (FILE_FORMAT => {file_format})
+            )
+            ON_ERROR = '{on_error}';"""
+        
+        return copy_sql
+
+
 
     def load_file(
         self,
@@ -88,6 +217,7 @@ class BronzeLoader:
         file_format: str,
         truncate_before_load: bool = True,
         on_error: str = "ABORT_STATEMENT",
+        init_sql_path: Optional[str] = None,
     ):
         """
         Load a local CSV (or other) file into a Bronze table.
@@ -114,6 +244,10 @@ class BronzeLoader:
             # 1) Context
             self._set_context(cur)
 
+            # 1.5) Ensure table exists (if init script provided)
+            if init_sql_path is not None:
+                self._ensure_table_exists(cur, table_name, init_sql_path)
+
             # 2) Truncate if requested
             if truncate_before_load:
                 logger.info(f"Truncating target table {fq_table} ...")
@@ -134,14 +268,14 @@ class BronzeLoader:
             cur.execute(put_sql)
 
 
-            # 4) COPY INTO table
-            logger.info(f"Copying data from @%{table_name} into {fq_table} ...")
-            copy_sql = rf"""
-                COPY INTO {fq_table}
-                FROM @%{table_name}
-                FILE_FORMAT = (FORMAT_NAME = {file_format})
-                ON_ERROR = '{on_error}';
-            """
+            # 4) COPY INTO table with auto-ingested timestamp
+            logger.info(f"Copying data from @%{table_name} into {fq_table} with INGESTED_AT...")
+            copy_sql = self._build_copy_with_ingested_at(
+                cur=cur,
+                table_name=table_name,
+                file_format=file_format,
+                on_error=on_error,
+            )
             logger.debug(f"COPY SQL:\n{copy_sql}")
             cur.execute(copy_sql)
 
