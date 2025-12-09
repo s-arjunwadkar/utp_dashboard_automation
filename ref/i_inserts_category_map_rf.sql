@@ -29,8 +29,14 @@ VALUES ('1',  NULL, NULL, NULL, NULL, '1',    'District', 'Cat 1 ⇒ District'),
 -- 8 — Statewide / Division (Traffic)
        ('8',  NULL, NULL, NULL, NULL, '8',    'Statewide',    'Cat 8 ⇒ Division/Statewide'),
 
--- 9 — (skip for now until WP list is confirmed)
-       ('9',  NULL, NULL, NULL, NULL, '9',    'MPO',      'MPO for specific Work Programs; PTN TASA; TASA Flex; TASA Flex IIJA'),
+-- 9 — MPO for specific Work Programs; PTN TASA; TASA Flex; TASA Flex IIJA
+       ('9', NULL, '.*09$', NULL, NULL, '9',  'MPO', 'Any WP ending with 09'),
+       ('9', NULL, '.*FX$', NULL, NULL, '9',  'Division', 'Any WP ending with FX ⇒ TASA Flex'), 
+       ('9', NULL, NULL, 'BRA', NULL, '9',  'Division', 'PID with BRA ⇒ TASA Flex'),
+       ('9', NULL, NULL, 'TE', NULL, '9',  'Division', 'PID with TE ⇒ TASA Flex'),
+       ('9', NULL, NULL, 'SRS', NULL, '9',  'Division', 'PID with SRS ⇒ TASA Flex'),
+       ('9', NULL, '.*JA$', NULL, NULL, '9',  'Division', 'Any WP ending with JA ⇒ TASA Flex IIJA'),
+       ('9', NULL, '.*TP$', NULL, NULL, '9',  'Division', 'Any WP ending with TP and PID is TP or PID <> TM or is NULL ⇒ PTN TASA'),
        
 -- 10 — 10CR splits + temporary default “rest = Statewide”
        ('10', '10CBNM', NULL, NULL, NULL, '10CR', 'MPO',    '10CR MPO program'),
@@ -50,24 +56,24 @@ VALUES ('1',  NULL, NULL, NULL, NULL, '1',    'District', 'Cat 1 ⇒ District'),
 -- DA — default District
        ('DA', NULL, NULL, NULL, NULL, 'DA', 'District', 'DA default to District');
 
--- 9 — MPO for specific Work Programs; PTN TASA; TASA Flex; TASA Flex IIJA
--- First need to mark pervious record as in active as of today
-UPDATE REF.CATEGORY_MAP
-SET is_active = FALSE,
-    valid_to = CURRENT_TIMESTAMP()
-WHERE category_parent = '9';
+-- -- 9 — MPO for specific Work Programs; PTN TASA; TASA Flex; TASA Flex IIJA
+-- -- First need to mark pervious record as in active as of today
+-- UPDATE REF.CATEGORY_MAP
+-- SET is_active = FALSE,
+--     valid_to = CURRENT_TIMESTAMP()
+-- WHERE category_parent = '9';
 
--- Now lets Insert new logic
-INSERT INTO REF.CATEGORY_MAP
-(category_parent, work_program_exact, work_program_regex, pid_exact, pid_regex,
- new_category, org_scope, comments)
-VALUES ('9', NULL, '.*09$', NULL, NULL, '9',  'MPO', 'Any WP ending with 09'),
-       ('9', NULL, '.*FX$', NULL, NULL, '9',  'Division', 'Any WP ending with FX ⇒ TASA Flex'), 
-       ('9', NULL, NULL, 'BRA', NULL, '9',  'Division', 'PID with BRA ⇒ TASA Flex'),
-       ('9', NULL, NULL, 'TE', NULL, '9',  'Division', 'PID with TE ⇒ TASA Flex'),
-       ('9', NULL, NULL, 'SRS', NULL, '9',  'Division', 'PID with SRS ⇒ TASA Flex'),
-       ('9', NULL, '.*JA$', NULL, NULL, '9',  'Division', 'Any WP ending with JA ⇒ TASA Flex IIJA'),
-       ('9', NULL, '.*TP$', NULL, NULL, '9',  'Division', 'Any WP ending with TP and PID is TP or PID <> TM or is NULL ⇒ PTN TASA');
+-- -- Now lets Insert new logic
+-- INSERT INTO REF.CATEGORY_MAP
+-- (category_parent, work_program_exact, work_program_regex, pid_exact, pid_regex,
+--  new_category, org_scope, comments)
+-- VALUES ('9', NULL, '.*09$', NULL, NULL, '9',  'MPO', 'Any WP ending with 09'),
+--        ('9', NULL, '.*FX$', NULL, NULL, '9',  'Division', 'Any WP ending with FX ⇒ TASA Flex'), 
+--        ('9', NULL, NULL, 'BRA', NULL, '9',  'Division', 'PID with BRA ⇒ TASA Flex'),
+--        ('9', NULL, NULL, 'TE', NULL, '9',  'Division', 'PID with TE ⇒ TASA Flex'),
+--        ('9', NULL, NULL, 'SRS', NULL, '9',  'Division', 'PID with SRS ⇒ TASA Flex'),
+--        ('9', NULL, '.*JA$', NULL, NULL, '9',  'Division', 'Any WP ending with JA ⇒ TASA Flex IIJA'),
+--        ('9', NULL, '.*TP$', NULL, NULL, '9',  'Division', 'Any WP ending with TP and PID is TP or PID <> TM or is NULL ⇒ PTN TASA');
        
 -- SELECT * FROM REF.CATEGORY_MAP;
 -- DROP TABLE IF EXISTS REF.CATEGORY_MAP;
