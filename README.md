@@ -117,6 +117,31 @@ If keyring is not installed, you may see warnings—this is safe.
 
 --------------------------------------------------------------------------------
 
+## Snowflake Environment Bootstrap
+
+The scripts use a specific Role, Warehouse, Database and Schemas. Also need to make sure all the reference tables are initialized. To run all the scripts in your Snowflake environment there are 2 options:
+ - Edit the Role, Warehouse, Database and Schema names in each script. (Lot of manual work)
+ - Run the 'sf_init_env_bootstrap.sql' file
+```
+ snowsql -c dev -f .\sf_init_env_bootstrap.sq
+```
+where;
+ - '-c' is the connection name. You might have different Snowflake accounts or configurations for development, production etc. You can edit the snowsql 'config' file with specifications like:
+ ```
+  [connections.my_example_connection]
+  account = "your_account_name"
+  user = "your_username"
+  authenticator = "externalbrowser" # For SSO based Login
+  role = "SYSADMIN"
+  warehouse = "<none selected>"     # Optional if needs to be specified
+  database = "<none selected>"      # Optional if needs to be specified
+  schema = "<none selected>"        # Optional if needs to be specified
+ ```
+
+Note: The above config information is available in SnowSight Account Details under Settings. Just click on the User Icon in the bottom left. (UI as of 12th December 2025)
+
+--------------------------------------------------------------------------------
+
 ## Weekly File Ingestion (Carryovers)
 
 ### Purpose
@@ -129,12 +154,13 @@ This replaces manual Snowsight uploads.
 ### Files Involved (bronze/)
 - file_loader_framework_bronze.py (framework)
 - ingest_carryovers_file_bronze.py (carryover ingestion)
+- t_init_targets_carryovers_bronze.sql (An Example)
 
 --------------------------------------------------------------------------------
 
 ## Pre‑requisites in Snowflake
 Run once:
-- Create target table
+- Path of init table sql file relative to ./bronze/.. Used as an argument to pass in the ingest file to init_sql_path. Eg: t_init_targets_carryovers_bronze.sql -> ./bronze/t_init.....sql
 - Create file format
 
 --------------------------------------------------------------------------------
@@ -147,7 +173,7 @@ The loader steps:
 3. TRUNCATE TABLE (optional)
 4. PUT file into @%TABLE_NAME
 5. COPY INTO TABLE with the file format
-6. Log row count
+6. Log row count and add ingestion timestamp
 
 This logic lives in file_loader_framework_bronze.py.
 
@@ -168,6 +194,7 @@ loader.load_file(
     file_format="BRONZE.CARRYOVERS_CSV_FF",                   # File Format define in Snowflake
     truncate_before_load=True,                                # If you want to truncate (=TRUE) or append (=FALSE)
     on_error="ABORT_STATEMENT",
+    init_sql_path=str(init_sql),                              # ensure table exists
 )
 ```
 
@@ -180,9 +207,12 @@ python ingest_carryovers_file_bronze.py
 
 4. Script behavior:
 - Browser opens for SSO
-- Truncate BRONZE.CARRYOVERS
-- PUT file to @%CARRYOVERS
-- COPY INTO BRONZE.CARRYOVERS
+- Checks if table exists in snowflake
+- If table exists then moves ahead, if not then creates it from sql file path given in the argument
+- Truncate the table eg: BRONZE.CARRYOVERS
+- PUT file to @%Table_name eg: @%CARRYOVERS
+- COPY INTO Table_name eg: BRONZE.CARRYOVERS
+- Add a timestamp attribute to capture ingestion date and time
 - Log “BRONZE.CARRYOVERS now has X rows”
 
 5. Optional: Verify in Snowflake.
@@ -214,9 +244,11 @@ BronzeLoader class:
 - _connect()
 - _set_context()
 - load_file():
-  - TRUNCATE (optional)
+  - Check If Exists
+  - TRUNCATE
   - PUT file
   - COPY INTO table
+  - Ingest Timestamp
   - Log row count
 
 --------------------------------------------------------------------------------
@@ -230,6 +262,7 @@ loader.load_file(
     local_file="path/to/new.csv",
     table_name="NEW_BRONZE_TABLE",
     file_format="BRONZE.NEW_FILE_FORMAT",
+    init_sql_path="path/to/init_table.sql",
 )
 ```
 
