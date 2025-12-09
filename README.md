@@ -170,10 +170,11 @@ Run once:
 The loader steps:
 1. Connect to Snowflake via externalbrowser
 2. USE ROLE / WAREHOUSE / DATABASE / SCHEMA
-3. TRUNCATE TABLE (optional)
-4. PUT file into @%TABLE_NAME
-5. COPY INTO TABLE with the file format
-6. Log row count and add ingestion timestamp
+3. Check if Table Exists
+4. TRUNCATE TABLE (optional)
+5. PUT file into @%TABLE_NAME
+6. COPY INTO TABLE with the file format
+7. Log row count and add ingestion timestamp
 
 This logic lives in file_loader_framework_bronze.py.
 
