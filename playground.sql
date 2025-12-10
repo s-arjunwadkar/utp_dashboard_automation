@@ -407,122 +407,122 @@ org_type vs expected_org_type = FALSE
 -- SHOW OBJECTS LIKE 'CARRYOVERS' IN SCHEMA BRONZE;
 -- SELECT * FROM REF.V_CATEGORY_MAP_CURRENT;
 -- SELECT * FROM ref.mpo_reference;
-SELECT * FROM SILVER.PD_MPO_SHORT;
-SELECT * FROM SILVER.V_PD_WITH_NEW_CATEGORY;
+-- SELECT * FROM SILVER.PD_MPO_SHORT;
+-- SELECT * FROM SILVER.V_PD_WITH_NEW_CATEGORY;
 
-WITH pd_mpo_desc_correction AS (
-SELECT
-      funding_category,
-      new_category,
-      district_division_abbr,
-      district_division,
-      CASE
-        WHEN mpo_description ILIKE '%south%' THEN 'South East Texas Regional Planning Commission'
-        ELSE mpo_description
-      END AS mpo_description,
-      authorized_amount,
-      project_id,
-      csj,
-      ccsj,
-      estimated_fiscal_year,
-      responsible_district_name,
-      county,
-      highway,
-      project_description,
-      limits_from,
-      limits_to,
-      let_schedule_fiscal_year,
-      let_type_description,
-      waterfall_force_account_charge,
-      waterfall_incentives_disincentives_charge,
-      project_stage,
-      funding_line_number,
-      work_program_code,
-      pid_code,
-      funding_approval_status_description,
-      funding_group_name,
-      alternative_delivery,
-      org_scope
-FROM SILVER.V_PD_WITH_NEW_CATEGORY
-),
+-- WITH pd_mpo_desc_correction AS (
+-- SELECT
+--       funding_category,
+--       new_category,
+--       district_division_abbr,
+--       district_division,
+--       CASE
+--         WHEN mpo_description ILIKE '%south%' THEN 'South East Texas Regional Planning Commission'
+--         ELSE mpo_description
+--       END AS mpo_description,
+--       authorized_amount,
+--       project_id,
+--       csj,
+--       ccsj,
+--       estimated_fiscal_year,
+--       responsible_district_name,
+--       county,
+--       highway,
+--       project_description,
+--       limits_from,
+--       limits_to,
+--       let_schedule_fiscal_year,
+--       let_type_description,
+--       waterfall_force_account_charge,
+--       waterfall_incentives_disincentives_charge,
+--       project_stage,
+--       funding_line_number,
+--       work_program_code,
+--       pid_code,
+--       funding_approval_status_description,
+--       funding_group_name,
+--       alternative_delivery,
+--       org_scope
+-- FROM SILVER.V_PD_WITH_NEW_CATEGORY
+-- ),
 
-mpo_reference_pair AS (
-    SELECT DISTINCT
-        mpo_description,
-        mpo_short
-    FROM REF.MPO_REFERENCE
-)
+-- mpo_reference_pair AS (
+--     SELECT DISTINCT
+--         mpo_description,
+--         mpo_short
+--     FROM REF.MPO_REFERENCE
+-- )
 
-SELECT
-    pd.funding_category AS parent_category,
-    pd.new_category AS category,
-    pd.district_division_abbr,
-    pd.district_division,
-    pd.mpo_description,
-    mpo.mpo_short,
-    pd.authorized_amount,
-    pd.project_id,
-    pd.csj,
-    pd.ccsj,
-    pd.estimated_fiscal_year,
-    pd.responsible_district_name,
-    pd.county,
-    pd.highway,
-    pd.project_description,
-    pd.limits_from,
-    pd.limits_to,
-    pd.let_schedule_fiscal_year,
-    pd.let_type_description,
-    pd.waterfall_force_account_charge,
-    pd.waterfall_incentives_disincentives_charge,
-    pd.project_stage,
-    pd.funding_line_number,
-    pd.work_program_code,
-    pd.pid_code,
-    pd.funding_approval_status_description,
-    pd.funding_group_name,
-    pd.alternative_delivery,
-    pd.org_scope
-FROM pd_mpo_desc_correction AS pd
-LEFT JOIN mpo_reference_pair AS mpo
-ON TRIM(LOWER(pd.mpo_description)) = TRIM(LOWER(mpo.mpo_description))
-;
+-- SELECT
+--     pd.funding_category AS parent_category,
+--     pd.new_category AS category,
+--     pd.district_division_abbr,
+--     pd.district_division,
+--     pd.mpo_description,
+--     mpo.mpo_short,
+--     pd.authorized_amount,
+--     pd.project_id,
+--     pd.csj,
+--     pd.ccsj,
+--     pd.estimated_fiscal_year,
+--     pd.responsible_district_name,
+--     pd.county,
+--     pd.highway,
+--     pd.project_description,
+--     pd.limits_from,
+--     pd.limits_to,
+--     pd.let_schedule_fiscal_year,
+--     pd.let_type_description,
+--     pd.waterfall_force_account_charge,
+--     pd.waterfall_incentives_disincentives_charge,
+--     pd.project_stage,
+--     pd.funding_line_number,
+--     pd.work_program_code,
+--     pd.pid_code,
+--     pd.funding_approval_status_description,
+--     pd.funding_group_name,
+--     pd.alternative_delivery,
+--     pd.org_scope
+-- FROM pd_mpo_desc_correction AS pd
+-- LEFT JOIN mpo_reference_pair AS mpo
+-- ON TRIM(LOWER(pd.mpo_description)) = TRIM(LOWER(mpo.mpo_description))
+-- ;
 
 
-SELECT *
-FROM SILVER.PD_MPO_SHORT
-WHERE org_scope = 'MPO' AND mpo_description IS NULL;
+-- SELECT *
+-- FROM SILVER.PD_MPO_SHORT
+-- WHERE org_scope = 'MPO' AND mpo_description IS NULL;
 
-SELECT
-    parent_category, 
-    category, 
-    district_division_abbr,
-    district_division,
-    mpo_short,
-    CASE
-        WHEN LOWER(org_scope) = 'district' THEN CONCAT(district_division_abbr, ' - ', district_division)
-        WHEN LOWER(org_scope) = 'mpo' AND mpo_short IS NOT NULL THEN CONCAT(district_division_abbr, ' - ', mpo_short)
-        WHEN category = '6' THEN 'Bridge Division'
-        WHEN category = '8' THEN 'Traffic Division'
-        WHEN category = '9' AND (work_program_code ILIKE '%FX' OR pid_code IN ('BRA', 'TE', 'SRS')) THEN 'Transportation Alternatives Flex Program'
-        WHEN category = '9' AND work_program_code ILIKE '%JA' THEN 'Transportation Alternatives Flex IIJA Program'
-        WHEN category = '9' AND work_program_code ILIKE '%TP' AND (pid_code != 'TM' OR pid_code IS NULL) THEN 'Transportation Alternatives Program - Non-TMAs'
-        WHEN category = '10' THEN 'Supplemental Transportation Projects'
-        WHEN category = '10CR' AND work_program_code = '10CBNS' THEN 'Carbon Reduction Program - Statewide'
-        WHEN category = '11' AND work_program_code = '16B11' THEN 'Rider 11B Program'
-        WHEN category = '11' AND work_program_code = 'COCO' THEN 'Cost Overruns/Change Orders'
-        ELSE district_division
-    END AS district_mpo_division,
-    estimated_fiscal_year, 
-    authorized_amount,
-    org_scope
-FROM SILVER.PD_MPO_SHORT
-WHERE NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
-      OR (org_scope = 'MPO' AND mpo_description IS NULL);
+-- SELECT
+--     parent_category, 
+--     category, 
+--     district_division_abbr,
+--     district_division,
+--     mpo_short,
+--     CASE
+--         WHEN LOWER(org_scope) = 'district' THEN CONCAT(district_division_abbr, ' - ', district_division)
+--         WHEN LOWER(org_scope) = 'mpo' AND mpo_short IS NOT NULL THEN CONCAT(district_division_abbr, ' - ', mpo_short)
+--         WHEN category = '6' THEN 'Bridge Division'
+--         WHEN category = '8' THEN 'Traffic Division'
+--         WHEN category = '9' AND (work_program_code ILIKE '%FX' OR pid_code IN ('BRA', 'TE', 'SRS')) THEN 'Transportation Alternatives Flex Program'
+--         WHEN category = '9' AND work_program_code ILIKE '%JA' THEN 'Transportation Alternatives Flex IIJA Program'
+--         WHEN category = '9' AND work_program_code ILIKE '%TP' AND (pid_code != 'TM' OR pid_code IS NULL) THEN 'Transportation Alternatives Program - Non-TMAs'
+--         WHEN category = '10' THEN 'Supplemental Transportation Projects'
+--         WHEN category = '10CR' AND work_program_code = '10CBNS' THEN 'Carbon Reduction Program - Statewide'
+--         WHEN category = '11' AND work_program_code = '16B11' THEN 'Rider 11B Program'
+--         WHEN category = '11' AND work_program_code = 'COCO' THEN 'Cost Overruns/Change Orders'
+--         ELSE district_division
+--     END AS district_mpo_division,
+--     estimated_fiscal_year, 
+--     authorized_amount,
+--     org_scope
+-- FROM SILVER.PD_MPO_SHORT
+-- WHERE NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
+--       OR (org_scope = 'MPO' AND mpo_description IS NULL);
 
-SELECT * FROM SILVER.V_PD_WITH_NEW_CATEGORY;
-SELECT * FROM SILVER.PD_MPO_SHORT;
-SELECT * FROM SILVER.PD_MISSING_MPO_DESC;
+-- SELECT * FROM SILVER.V_PD_WITH_NEW_CATEGORY;
+-- SELECT * FROM SILVER.PD_MPO_SHORT;
+-- SELECT * FROM SILVER.PD_MISSING_MPO_DESC;
 
 -- pd_all_except_mpo AS (
 --     SELECT *
