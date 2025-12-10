@@ -30,6 +30,7 @@ SELECT
     org_scope
 FROM SILVER.PD_MPO_SHORT
 WHERE NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
+      OR (org_scope = 'MPO' AND mpo_description IS NULL) -- Exclude records with missing MPO description for MPO org scope
 ),
 
 pd_final AS (

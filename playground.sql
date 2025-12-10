@@ -405,6 +405,7 @@ org_type vs expected_org_type = FALSE
 -- SELECT * FROM BRONZE.CARRYOVERS;
 
 -- SHOW OBJECTS LIKE 'CARRYOVERS' IN SCHEMA BRONZE;
+-- SELECT * FROM REF.V_CATEGORY_MAP_CURRENT;
 -- SELECT * FROM ref.mpo_reference;
 SELECT * FROM SILVER.PD_MPO_SHORT;
 SELECT * FROM SILVER.V_PD_WITH_NEW_CATEGORY;
@@ -445,75 +446,200 @@ SELECT
 FROM SILVER.V_PD_WITH_NEW_CATEGORY
 ),
 
-pd_missing_mpo AS (
+mpo_reference_pair AS (
     SELECT DISTINCT
-      pdc.funding_category,
-      pdc.new_category,
-      pdc.district_division_abbr,
-      pdc.district_division,
-      CASE
-        WHEN pdc.org_scope = 'MPO' AND pdc.mpo_description IS NULL THEN mpo.mpo_description
-        ELSE pdc.mpo_description
-      END AS mpo_description,
-      pdc.authorized_amount,
-      pdc.project_id,
-      pdc.csj,
-      pdc.ccsj,
-      pdc.estimated_fiscal_year,
-      pdc.responsible_district_name,
-      pdc.county,
-      pdc.highway,
-      pdc.project_description,
-      pdc.limits_from,
-      pdc.limits_to,
-      pdc.let_schedule_fiscal_year,
-      pdc.let_type_description,
-      pdc.waterfall_force_account_charge,
-      pdc.waterfall_incentives_disincentives_charge,
-      pdc.project_stage,
-      pdc.funding_line_number,
-      pdc.work_program_code,
-      pdc.pid_code,
-      pdc.funding_approval_status_description,
-      pdc.funding_group_name,
-      pdc.alternative_delivery,
-      pdc.org_scope 
-    FROM pd_mpo_desc_correction AS pdc
-    LEFT JOIN REF.MPO_REFERENCE AS mpo
-    ON TRIM(LOWER(pdc.district_division)) = TRIM(LOWER(mpo.district))
+        mpo_description,
+        mpo_short
+    FROM REF.MPO_REFERENCE
 )
 
 SELECT
-      pd.funding_category AS parent_category,
-      pd.new_category AS category,
-      pd.district_division_abbr,
-      pd.district_division,
-      pd.mpo_description,
-      mpo.mpo_short,
-      pd.authorized_amount,
-      pd.project_id,
-      pd.csj,
-      pd.ccsj,
-      pd.estimated_fiscal_year,
-      pd.responsible_district_name,
-      pd.county,
-      pd.highway,
-      pd.project_description,
-      pd.limits_from,
-      pd.limits_to,
-      pd.let_schedule_fiscal_year,
-      pd.let_type_description,
-      pd.waterfall_force_account_charge,
-      pd.waterfall_incentives_disincentives_charge,
-      pd.project_stage,
-      pd.funding_line_number,
-      pd.work_program_code,
-      pd.pid_code,
-      pd.funding_approval_status_description,
-      pd.funding_group_name,
-      pd.alternative_delivery,
-      pd.org_scope
-FROM pd_missing_mpo AS pd
-LEFT JOIN REF.MPO_REFERENCE AS mpo
+    pd.funding_category AS parent_category,
+    pd.new_category AS category,
+    pd.district_division_abbr,
+    pd.district_division,
+    pd.mpo_description,
+    mpo.mpo_short,
+    pd.authorized_amount,
+    pd.project_id,
+    pd.csj,
+    pd.ccsj,
+    pd.estimated_fiscal_year,
+    pd.responsible_district_name,
+    pd.county,
+    pd.highway,
+    pd.project_description,
+    pd.limits_from,
+    pd.limits_to,
+    pd.let_schedule_fiscal_year,
+    pd.let_type_description,
+    pd.waterfall_force_account_charge,
+    pd.waterfall_incentives_disincentives_charge,
+    pd.project_stage,
+    pd.funding_line_number,
+    pd.work_program_code,
+    pd.pid_code,
+    pd.funding_approval_status_description,
+    pd.funding_group_name,
+    pd.alternative_delivery,
+    pd.org_scope
+FROM pd_mpo_desc_correction AS pd
+LEFT JOIN mpo_reference_pair AS mpo
 ON TRIM(LOWER(pd.mpo_description)) = TRIM(LOWER(mpo.mpo_description))
 ;
+
+
+SELECT *
+FROM SILVER.PD_MPO_SHORT
+WHERE org_scope = 'MPO' AND mpo_description IS NULL;
+
+SELECT
+    parent_category, 
+    category, 
+    district_division_abbr,
+    district_division,
+    mpo_short,
+    CASE
+        WHEN LOWER(org_scope) = 'district' THEN CONCAT(district_division_abbr, ' - ', district_division)
+        WHEN LOWER(org_scope) = 'mpo' AND mpo_short IS NOT NULL THEN CONCAT(district_division_abbr, ' - ', mpo_short)
+        WHEN category = '6' THEN 'Bridge Division'
+        WHEN category = '8' THEN 'Traffic Division'
+        WHEN category = '9' AND (work_program_code ILIKE '%FX' OR pid_code IN ('BRA', 'TE', 'SRS')) THEN 'Transportation Alternatives Flex Program'
+        WHEN category = '9' AND work_program_code ILIKE '%JA' THEN 'Transportation Alternatives Flex IIJA Program'
+        WHEN category = '9' AND work_program_code ILIKE '%TP' AND (pid_code != 'TM' OR pid_code IS NULL) THEN 'Transportation Alternatives Program - Non-TMAs'
+        WHEN category = '10' THEN 'Supplemental Transportation Projects'
+        WHEN category = '10CR' AND work_program_code = '10CBNS' THEN 'Carbon Reduction Program - Statewide'
+        WHEN category = '11' AND work_program_code = '16B11' THEN 'Rider 11B Program'
+        WHEN category = '11' AND work_program_code = 'COCO' THEN 'Cost Overruns/Change Orders'
+        ELSE district_division
+    END AS district_mpo_division,
+    estimated_fiscal_year, 
+    authorized_amount,
+    org_scope
+FROM SILVER.PD_MPO_SHORT
+WHERE NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
+      OR (org_scope = 'MPO' AND mpo_description IS NULL);
+
+SELECT * FROM SILVER.V_PD_WITH_NEW_CATEGORY;
+SELECT * FROM SILVER.PD_MPO_SHORT;
+SELECT * FROM SILVER.PD_MISSING_MPO_DESC;
+
+-- pd_all_except_mpo AS (
+--     SELECT *
+--     FROM pd_mpo_desc_correction
+--     WHERE NOT org_scope = 'MPO'
+-- ),
+
+-- pd_mpo_present AS (
+--     SELECT *
+--     FROM pd_mpo_desc_correction
+--     WHERE org_scope = 'MPO' AND mpo_description IS NOT NULL
+-- ),
+
+-- pd_fetch_missing_mpo AS (
+--     SELECT pdc.*, mpo.mpo_description AS fetched_mpo_description
+--     FROM pd_mpo_desc_correction AS pdc
+--     INNER JOIN REF.MPO_REFERENCE AS mpo
+--     ON TRIM(LOWER(pdc.district_division)) = TRIM(LOWER(mpo.district))
+--     WHERE pdc.org_scope = 'MPO' AND pdc.mpo_description IS NULL
+-- ),
+
+-- bmt_test_ref AS (
+--     SELECT *
+--     FROM pd_mpo_present
+--     WHERE district_division_abbr = 'BMT'
+-- ),
+
+-- bmt_ambi_test AS (
+--     SELECT
+--         new_category AS category,
+--         district_division_abbr,
+--         district_division,
+--         NULL AS mpo_description,
+--         authorized_amount,
+--         csj,
+--         estimated_fiscal_year,
+--         work_program_code,
+--         pid_code,
+--         org_scope
+--     FROM pd_mpo_present
+--     WHERE district_division_abbr = 'BMT'
+-- )
+
+-- SELECT bmt.*, mpo.mpo_description AS fetched_mpo_description 
+-- FROM bmt_ambi_test AS bmt
+-- INNER JOIN REF.MPO_REFERENCE AS mpo
+-- ON TRIM(LOWER(bmt.district_division)) = TRIM(LOWER(mpo.district))
+-- WHERE bmt.org_scope = 'MPO' AND bmt.mpo_description IS NULL;
+-- pd_missing_mpo AS (
+--     SELECT DISTINCT
+--       pdc.funding_category,
+--       pdc.new_category,
+--       pdc.district_division_abbr,
+--       pdc.district_division,
+--       CASE
+--         WHEN pdc.org_scope = 'MPO' AND pdc.mpo_description IS NULL THEN mpo.mpo_description
+--         ELSE pdc.mpo_description
+--       END AS mpo_description,
+--       pdc.authorized_amount,
+--       pdc.project_id,
+--       pdc.csj,
+--       pdc.ccsj,
+--       pdc.estimated_fiscal_year,
+--       pdc.responsible_district_name,
+--       pdc.county,
+--       pdc.highway,
+--       pdc.project_description,
+--       pdc.limits_from,
+--       pdc.limits_to,
+--       pdc.let_schedule_fiscal_year,
+--       pdc.let_type_description,
+--       pdc.waterfall_force_account_charge,
+--       pdc.waterfall_incentives_disincentives_charge,
+--       pdc.project_stage,
+--       pdc.funding_line_number,
+--       pdc.work_program_code,
+--       pdc.pid_code,
+--       pdc.funding_approval_status_description,
+--       pdc.funding_group_name,
+--       pdc.alternative_delivery,
+--       pdc.org_scope 
+--     FROM pd_mpo_desc_correction AS pdc
+--     LEFT JOIN REF.MPO_REFERENCE AS mpo
+--     ON TRIM(LOWER(pdc.district_division)) = TRIM(LOWER(mpo.district))
+-- )
+
+-- SELECT
+--       pd.funding_category AS parent_category,
+--       pd.new_category AS category,
+--       pd.district_division_abbr,
+--       pd.district_division,
+--       pd.mpo_description,
+--       mpo.mpo_short,
+--       pd.authorized_amount,
+--       pd.project_id,
+--       pd.csj,
+--       pd.ccsj,
+--       pd.estimated_fiscal_year,
+--       pd.responsible_district_name,
+--       pd.county,
+--       pd.highway,
+--       pd.project_description,
+--       pd.limits_from,
+--       pd.limits_to,
+--       pd.let_schedule_fiscal_year,
+--       pd.let_type_description,
+--       pd.waterfall_force_account_charge,
+--       pd.waterfall_incentives_disincentives_charge,
+--       pd.project_stage,
+--       pd.funding_line_number,
+--       pd.work_program_code,
+--       pd.pid_code,
+--       pd.funding_approval_status_description,
+--       pd.funding_group_name,
+--       pd.alternative_delivery,
+--       pd.org_scope
+-- FROM pd_missing_mpo AS pd
+-- LEFT JOIN REF.MPO_REFERENCE AS mpo
+-- ON TRIM(LOWER(pd.mpo_description)) = TRIM(LOWER(mpo.mpo_description))
+-- ;
