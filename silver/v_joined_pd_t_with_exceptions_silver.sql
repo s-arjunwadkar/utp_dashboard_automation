@@ -6,12 +6,11 @@ COMMENT = 'This tables appends the exceptions in target file to the joined proje
 AS
 WITH exceptions AS ( 
 SELECT
-    category,
-    district_mpo_division,
-    fy,
-    0 AS total_authorized,
-    total_targets,
-    carryovers
+    category::STRING AS category,
+    district_mpo_division::STRING AS district_mpo_division,
+    fy::STRING AS fy,
+    0 AS total_authorized_amount,
+    total_targets
 FROM SILVER.EXCEPTION_TARGETS
 )
 
