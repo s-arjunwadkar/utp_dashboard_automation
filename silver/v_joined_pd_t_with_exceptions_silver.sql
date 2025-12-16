@@ -28,7 +28,7 @@ SELECT
     CASE
         WHEN fy = 2026 THEN '2026 + Carryovers'
         ELSE CAST(fy AS STRING)
-    END AS fy,
+    END AS CAST(fy AS STRING) AS fy,
     total_authorized_amount + carryovers AS total_authorized_amount,
     total_targets,
     carryovers
