@@ -644,27 +644,29 @@ org_type vs expected_org_type = FALSE
 -- ON TRIM(LOWER(pd.mpo_description)) = TRIM(LOWER(mpo.mpo_description))
 -- ;
 
-WITH pd_tar_joined AS (
-    SELECT 
-        COALESCE(pd.category, tg.category)::STRING AS category, 
-        COALESCE(pd.district_mpo_division, tg.district_mpo_division)::STRING AS district_mpo_division, 
-        COALESCE(pd.estimated_fiscal_year, tg.fy)::INTEGER AS fy, 
-        COALESCE(pd.total_authorized_amount, 0)::FLOAT AS total_authorized_amount, 
-        COALESCE(tg.total_targets, 0)::FLOAT AS total_targets, 
-        COALESCE(tg.carryovers, 0)::FLOAT AS carryovers
-    FROM SILVER.PD_TOTAL_PROGRAMMED AS pd
-    FULL OUTER JOIN SILVER.NORMAL_TARGETS AS tg
-    ON pd.category = tg.category AND pd.district_mpo_division = tg.district_mpo_division AND pd.estimated_fiscal_year = tg.fy
-    ORDER BY category, district_mpo_division, fy
-)
+-- WITH pd_tar_joined AS (
+--     SELECT 
+--         COALESCE(pd.category, tg.category)::STRING AS category, 
+--         COALESCE(pd.district_mpo_division, tg.district_mpo_division)::STRING AS district_mpo_division, 
+--         COALESCE(pd.estimated_fiscal_year, tg.fy)::INTEGER AS fy, 
+--         COALESCE(pd.total_authorized_amount, 0)::FLOAT AS total_authorized_amount, 
+--         COALESCE(tg.total_targets, 0)::FLOAT AS total_targets, 
+--         COALESCE(tg.carryovers, 0)::FLOAT AS carryovers
+--     FROM SILVER.PD_TOTAL_PROGRAMMED AS pd
+--     FULL OUTER JOIN SILVER.NORMAL_TARGETS AS tg
+--     ON pd.category = tg.category AND pd.district_mpo_division = tg.district_mpo_division AND pd.estimated_fiscal_year = tg.fy
+--     ORDER BY category, district_mpo_division, fy
+-- )
 
-SELECT
-    category,
-    district_mpo_division,
-    CASE
-        WHEN fy = 2026 THEN '2026 + Carryovers'
-        ELSE CAST(fy AS STRING)
-    END AS fy,
-    total_authorized_amount + carryovers AS total_authorized_amount,
-    total_targets
-FROM pd_tar_joined;
+-- SELECT
+--     category,
+--     district_mpo_division,
+--     CASE
+--         WHEN fy = 2026 THEN '2026 + Carryovers'
+--         ELSE CAST(fy AS STRING)
+--     END AS fy,
+--     total_authorized_amount + carryovers AS total_authorized_amount,
+--     total_targets
+-- FROM pd_tar_joined;
+
+-- SELECT * FROM SILVER.TOTAL_WITH_EXCPN_VIEW;

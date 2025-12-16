@@ -6,18 +6,33 @@ COMMENT = 'This tables appends the exceptions in target file to the joined proje
 AS
 WITH exceptions AS ( 
 SELECT
-    category::STRING AS category,
-    district_mpo_division::STRING AS district_mpo_division,
-    fy::STRING AS fy,
+    category,
+    district_mpo_division,
+    fy,
     0 AS total_authorized_amount,
-    total_targets
+    total_targets,
+    carryovers
 FROM SILVER.EXCEPTION_TARGETS
+),
+
+normal_exceptions_union AS (
+    SELECT * FROM SILVER.JOINED_PD_TARGET_VIEW
+    UNION ALL
+    SELECT * FROM exceptions
+    ORDER BY category, district_mpo_division, fy
 )
 
-SELECT * FROM SILVER.JOINED_PD_TARGET_VIEW
-UNION ALL
-SELECT * FROM exceptions
+SELECT
+    category,
+    district_mpo_division,
+    CASE
+        WHEN fy = 2026 THEN '2026 + Carryovers'
+        ELSE CAST(fy AS STRING)
+    END AS fy,
+    total_authorized_amount + carryovers AS total_authorized_amount,
+    total_targets,
+    carryovers
+FROM normal_exceptions_union
 ORDER BY category, district_mpo_division, fy
 ;
-
 -- SELECT * FROM SILVER.TOTAL_WITH_EXCPN_VIEW;
