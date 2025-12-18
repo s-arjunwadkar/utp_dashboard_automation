@@ -8,7 +8,7 @@ WITH exceptions AS (
 SELECT
     category,
     district_mpo_division,
-    fy,
+    fy::INTEGER AS fy,
     0 AS total_authorized_amount,
     total_targets,
     carryovers
@@ -28,7 +28,7 @@ SELECT
     CASE
         WHEN fy = 2026 THEN '2026 + Carryovers'
         ELSE CAST(fy AS STRING)
-    END AS CAST(fy AS STRING) AS fy,
+    END AS fy,
     total_authorized_amount + carryovers AS total_authorized_amount,
     total_targets,
     carryovers
