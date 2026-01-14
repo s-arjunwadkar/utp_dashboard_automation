@@ -23,14 +23,14 @@ def main():
 
     # Resolve init SQL relative to this script's directory
     base_dir = Path(__file__).parent
-    init_sql = base_dir / "t_init_targets_carryovers_bronze.sql"
+    init_sql = base_dir / "t_init_current_analysis_bronze.sql"
 
     # ---------------------------------------------
     # 3. Call load_file for this specific use case
     # ---------------------------------------------
     loader.load_file(
-        local_file=r"C:\Users\S-Arjunwadkar\Downloads\UTP_Dashboard_Project\input_files\2026_Carryover_TTI_v44.csv",
-        table_name="CARRYOVERS",                  # no schema here
+        local_file=r"C:\Users\S-Arjunwadkar\Downloads\UTP_Dashboard_Project\input_files\current_category_analysis_detail.csv",
+        table_name="LET_DATA",                  # no schema here
         file_format="BRONZE.CARRYOVERS_CSV_FF",       # fully-qualified file format
         truncate_before_load=True,                    # full refresh weekly
         on_error="ABORT_STATEMENT",
