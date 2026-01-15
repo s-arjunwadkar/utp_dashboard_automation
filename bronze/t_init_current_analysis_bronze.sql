@@ -55,7 +55,7 @@ CREATE OR REPLACE TABLE BRONZE.LET_DATA (
     LET_TYPE_DESCRIPTION                 VARCHAR,
     MNTE_ORDR_DT                         DATE,
     MNTE_ORDR_NBR                        VARCHAR,
-    NEPA_CLEAR_DT                        TIMESTAMP_NTZ,
+    NEPA_CLEAR_DT                        DATE,
     PROJ_CLASS_DSCR                      VARCHAR,
     PROJECT_ID                           VARCHAR,
     PROJ_CNTY_1                          VARCHAR,

@@ -31,7 +31,7 @@ def main():
     loader.load_file(
         local_file=r"C:\Users\S-Arjunwadkar\Downloads\UTP_Dashboard_Project\input_files\current_category_analysis_detail.csv",
         table_name="LET_DATA",                  # no schema here
-        file_format="BRONZE.CARRYOVERS_CSV_FF",       # fully-qualified file format
+        file_format="BRONZE.LET_DATA_CSV_FF",       # fully-qualified file format
         truncate_before_load=True,                    # full refresh weekly
         on_error="ABORT_STATEMENT",
         init_sql_path=str(init_sql),                  # ensure table exists
