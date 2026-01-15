@@ -70,4 +70,4 @@ CREATE OR REPLACE TABLE BRONZE.LET_DATA (
     TDC_PCT                              INTEGER,
     INGESTED_AT                          TIMESTAMP_NTZ
 )
-COMMENT = 'Initialize the current analysis details (LET) table to load data from the new current analysis details file each week.';
+COMMENT = 'Initialize the current analysis details (LET) table to load data from the new current analysis details file bi-week.';
