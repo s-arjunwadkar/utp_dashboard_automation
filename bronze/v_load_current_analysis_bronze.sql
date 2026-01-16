@@ -16,4 +16,7 @@ SELECT
     WORK_PROGRAM::STRING AS work_program,
     ROW_CSJ::STRING AS row_csj,
     FUNDING_LINE_NO::STRING AS funding_line_number
-FROM BRONZE.LET_DATA;                        
+FROM BRONZE.LET_DATA
+WHERE ACTUAL_LET_DATE IS NOT NULL
+  AND LET_YEAR = 2026
+  AND CATEGORY <> 'ROW';                        
