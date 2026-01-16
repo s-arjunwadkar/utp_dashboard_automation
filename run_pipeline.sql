@@ -4,6 +4,8 @@ USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
 
 -- Bronze Layer
 !source bronze/v_load_targets_carryovers_bronze.sql;
+!source bronze/v_load_current_analysis_bronze.sql;
+!source bronze/v_load_cost_overruns_bronze.sql;
 !source bronze/dt_extract_project_details_bronze.sql;
 
 -- Silver Layer
