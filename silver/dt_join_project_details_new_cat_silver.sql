@@ -13,7 +13,7 @@ SELECT
   /* fall back to the original category if no rule matched */
   COALESCE(m.new_category, p.funding_category) AS new_category,
   m.org_scope
-FROM SILVER.PROJECT_DETAILS_FILTERED_SILVER p
+FROM SILVER.PD_LET_COSTOVERRUNS_JOINED p
 LEFT JOIN REF.V_CATEGORY_MAP_CURRENT m
   ON m.category_parent = p.funding_category
  AND (

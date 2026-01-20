@@ -39,6 +39,7 @@ SELECT
       funding_approval_status_description,
       funding_group_name,
       alternative_delivery,
+      orig_authorized_amount,
       org_scope
 FROM SILVER.V_PD_WITH_NEW_CATEGORY
 ),
@@ -79,6 +80,7 @@ SELECT
     pd.funding_approval_status_description,
     pd.funding_group_name,
     pd.alternative_delivery,
+    pd.orig_authorized_amount,
     pd.org_scope
 FROM pd_mpo_desc_correction AS pd
 LEFT JOIN mpo_reference_pair AS mpo

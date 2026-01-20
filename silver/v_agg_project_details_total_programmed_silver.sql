@@ -27,6 +27,7 @@ SELECT
     END AS district_mpo_division,
     estimated_fiscal_year, 
     authorized_amount,
+    orig_authorized_amount,
     org_scope
 FROM SILVER.PD_MPO_SHORT
 WHERE NOT (category = '11' AND work_program_code = '2910GR') -- Should be CAT 10/ Fix the Work Program (BY TxDOT)
