@@ -13,7 +13,7 @@ SELECT
   pd.mpo_description,
   pd.funding_category,
   CASE
-    WHEN pd.estimated_fiscal_year = 2026 THEN COALESCE(pd.authorized_amount + COALESCE(lc.new_total, 0),0)
+    WHEN pd.estimated_fiscal_year = 2026 THEN COALESCE(lc.new_total, pd.authorized_amount)
     ELSE pd.authorized_amount
   END AS authorized_amount,
   pd.project_id,
