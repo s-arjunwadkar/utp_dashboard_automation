@@ -2,6 +2,8 @@ import logging
 import sys
 from dataclasses import dataclass
 from typing import Optional
+import os
+import re
 
 import snowflake.connector
 
@@ -137,7 +139,23 @@ class BronzeLoader:
 
         logger.info(f"Init script {init_sql_path} executed. Table {db}.{schema}.{table_upper} should now exist.")
 
-    def _build_copy_with_ingested_at(self, cur, table_name: str, file_format: str, on_error: str,) -> str:
+    def _remove_matching_stage_files(self, cur, table_name: str, local_file: str):
+        """
+        Remove staged files in @%table_name that match the local filename (incl .gz).
+        This prevents old files from being reloaded.
+        """
+        base_name = os.path.basename(local_file)           # e.g., "costoverruns.csv"
+        escaped = re.escape(base_name)                     # escape regex special chars
+        pattern = rf"^{escaped}(\.gz)?$"                         # matches costoverruns.csv and costoverruns.csv.gz
+
+        sql = f"REMOVE @%{table_name} PATTERN='{pattern}';"
+        logger.info(f"Removing old staged files in @%{table_name} matching: {base_name}")
+        logger.debug(f"REMOVE SQL:\n{sql}")
+        cur.execute(sql)
+
+        return pattern  # return pattern so COPY can use it too
+
+    def _build_copy_with_ingested_at(self, cur, table_name: str, file_format: str, on_error: str, pattern: Optional[str] = None,) -> str:
         """
         Build a COPY INTO statement that:
           - Reads from @%TABLE using the provided FILE_FORMAT
@@ -197,12 +215,16 @@ class BronzeLoader:
         select_exprs = file_exprs + ["CURRENT_TIMESTAMP()::TIMESTAMP_NTZ"]
         select_clause = ",\n    ".join(select_exprs)
 
+        pattern_clause = f",\n                PATTERN => '{pattern}'" if pattern else ""
+
         copy_sql = f"""
             COPY INTO {fq_table}
             FROM (
                 SELECT
                     {select_clause}
-                FROM @%{table_name} (FILE_FORMAT => {file_format})
+                FROM @%{table_name} (
+                FILE_FORMAT => {file_format}{pattern_clause}
+                )
             )
             ON_ERROR = '{on_error}';"""
         
@@ -235,10 +257,16 @@ class BronzeLoader:
         on_error : str
             COPY INTO ON_ERROR behavior (e.g., 'ABORT_STATEMENT', 'CONTINUE').
         """
+        """
+        Stage cleanup and PUT are non-transactional.
+        TRUNCATE + COPY are transactional and rollback-safe.
+        """
         conn = self._connect()
         cur = conn.cursor()
 
         fq_table = f"{self.config.schema}.{table_name}"  # e.g. BRONZE.CARRYOVERS_V43
+        in_txn = False
+
 
         try:
             # 1) Context
@@ -248,12 +276,10 @@ class BronzeLoader:
             if init_sql_path is not None:
                 self._ensure_table_exists(cur, table_name, init_sql_path)
 
-            # 2) Truncate if requested
-            if truncate_before_load:
-                logger.info(f"Truncating target table {fq_table} ...")
-                cur.execute(f"TRUNCATE TABLE {fq_table};")
+            # 2) PUT local file -> table stage (@%TABLE)
+            # Remove any old staged copies of the same file first
+            pattern = self._remove_matching_stage_files(cur, table_name, local_file)
 
-            # 3) PUT local file -> table stage (@%TABLE)
             logger.info(f"Uploading local file to stage @%{table_name} ...")
 
             # Normalize path (optional but nice: convert backslashes to forward slashes)
@@ -267,6 +293,14 @@ class BronzeLoader:
             logger.debug(f"PUT SQL:\n{put_sql}")
             cur.execute(put_sql)
 
+            # ✅ 2.5) Start transaction for table changes only
+            cur.execute("BEGIN;")
+            in_txn = True
+
+            # 3) Truncate if requested
+            if truncate_before_load:
+                logger.info(f"Truncating target table {fq_table} ...")
+                cur.execute(f"TRUNCATE TABLE {fq_table};")
 
             # 4) COPY INTO table with auto-ingested timestamp
             logger.info(f"Copying data from @%{table_name} into {fq_table} with INGESTED_AT...")
@@ -275,9 +309,14 @@ class BronzeLoader:
                 table_name=table_name,
                 file_format=file_format,
                 on_error=on_error,
+                pattern=pattern,
             )
             logger.debug(f"COPY SQL:\n{copy_sql}")
             cur.execute(copy_sql)
+
+            # ✅ COMMIT so changes are durable
+            cur.execute("COMMIT;")
+            in_txn = False
 
             # 5) Optional: log row count after load
             cur.execute(f"SELECT COUNT(*) FROM {fq_table};")
@@ -285,8 +324,16 @@ class BronzeLoader:
             logger.info(f"✔ Load complete. {fq_table} now has {row_count} rows.")
 
         except Exception as e:
+            # ✅ rollback ONLY if we started a transaction
+            if in_txn:
+                try:
+                    cur.execute("ROLLBACK;")
+                except Exception:
+                    pass
+
             logger.error(f"❌ Error during load_file for {fq_table}: {e}")
             raise
+
         finally:
             logger.info("Closing Snowflake cursor and connection.")
             cur.close()

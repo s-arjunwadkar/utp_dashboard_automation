@@ -25,11 +25,16 @@ def main():
     base_dir = Path(__file__).parent
     init_sql = base_dir / "t_init_targets_carryovers_bronze.sql"
 
+    # Define file path
+    file_path = Path(r"C:\Users\S-Arjunwadkar\Downloads\UTP_Dashboard_Project\input_files\2026_Carryover_TTI_v44.csv")
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+    
     # ---------------------------------------------
     # 3. Call load_file for this specific use case
     # ---------------------------------------------
     loader.load_file(
-        local_file=r"C:\Users\S-Arjunwadkar\Downloads\UTP_Dashboard_Project\input_files\2026_Carryover_TTI_v44.csv",
+        local_file=str(file_path),
         table_name="CARRYOVERS",                  # no schema here
         file_format="BRONZE.CARRYOVERS_CSV_FF",       # fully-qualified file format
         truncate_before_load=True,                    # full refresh weekly
