@@ -1,0 +1,68 @@
+USE ROLE SYSADMIN;
+USE DATABASE SHARVIL_UTP_2026_DASHBOARD;
+USE SCHEMA BRONZE;
+
+BEGIN
+  LET co_pattern STRING DEFAULT '.*change_orders.*';
+  LET co_create_sql STRING;
+  LET co_unpivot_sql STRING;
+
+  -- 1) Infer schema from staged file (PATTERN not supported in your INFER_SCHEMA)
+  CREATE OR REPLACE TEMP TABLE _CO_INFER AS
+  SELECT *
+  FROM TABLE(
+    INFER_SCHEMA(
+      LOCATION    => '@BRONZE.CHANGE_ORDERS_STAGE',
+      FILE_FORMAT => 'BRONZE.CHANGE_ORDERS_CSV_FF'
+    )
+  );
+
+  -- 2) Build CREATE TABLE (all inferred columns as TEXT) + INGESTED_AT
+  SELECT
+    'CREATE OR REPLACE TABLE BRONZE.CHANGE_ORDERS_RAW_WIDE (' ||
+    LISTAGG('"' || COLUMN_NAME || '" TEXT', ', ') ||
+    ', INGESTED_AT TIMESTAMP_NTZ);'
+  INTO :co_create_sql
+  FROM _CO_INFER;
+
+  EXECUTE IMMEDIATE :co_create_sql;
+
+  -- 3) Load staged file into raw wide table (maps by header)
+  COPY INTO BRONZE.CHANGE_ORDERS_RAW_WIDE
+  FROM @BRONZE.CHANGE_ORDERS_STAGE
+  FILE_FORMAT = (FORMAT_NAME = 'BRONZE.CHANGE_ORDERS_CSV_FF')
+  MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+  PATTERN = :co_pattern
+  ON_ERROR = 'ABORT_STATEMENT';
+
+  -- 4) Stamp INGESTED_AT (COPY won’t populate it automatically)
+  UPDATE BRONZE.CHANGE_ORDERS_RAW_WIDE
+  SET INGESTED_AT = CURRENT_TIMESTAMP()::TIMESTAMP_NTZ
+  WHERE INGESTED_AT IS NULL;
+
+  -- 5) Build dynamic UNPIVOT (exclude DISTRICT + INGESTED_AT), cast amounts to DOUBLE, default 0
+  SELECT
+    'CREATE OR REPLACE TABLE BRONZE.CHANGE_ORDERS_LONG AS
+     SELECT
+       DISTRICT,
+       metric_name,
+       COALESCE(TRY_TO_DOUBLE(metric_value), 0) AS metric_value,
+       INGESTED_AT
+     FROM BRONZE.CHANGE_ORDERS_RAW_WIDE
+     UNPIVOT(metric_value FOR metric_name IN (' ||
+     LISTAGG('"' || COLUMN_NAME || '"', ', ') ||
+     '));'
+  INTO :co_unpivot_sql
+  FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_CATALOG = CURRENT_DATABASE()
+    AND TABLE_SCHEMA  = 'BRONZE'
+    AND TABLE_NAME    = 'CHANGE_ORDERS_RAW_WIDE'
+    AND COLUMN_NAME NOT IN ('DISTRICT', 'INGESTED_AT');
+
+  EXECUTE IMMEDIATE :co_unpivot_sql;
+
+  -- 6) Stable downstream object
+  CREATE OR REPLACE VIEW BRONZE.CHANGE_ORDERS AS
+  SELECT * FROM BRONZE.CHANGE_ORDERS_LONG;
+
+END;
