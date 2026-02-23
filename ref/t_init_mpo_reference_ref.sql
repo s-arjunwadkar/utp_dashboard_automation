@@ -91,3 +91,68 @@ VALUES
   ('North Central Texas Council of Governments', 'NCTCOG MPO', 'Dallas'),
   ('North Central Texas Council of Governments', 'NCTCOG MPO', 'Paris'),
   ('Houston-Galveston Area Council of Government', 'HGAC MPO', 'Beaumont');
+
+ALTER TABLE REF.MPO_REFERENCE ADD (COLUMN DISTRICT_ABBR STRING, COLUMN CHANGE_ORDERS_MPO STRING);
+SELECT * FROM REF.MPO_REFERENCE;
+
+UPDATE REF.MPO_REFERENCE
+SET DISTRICT_ABBR =
+    CASE
+        WHEN MPO_SHORT = 'Abilene MPO' THEN 'ABL'
+        WHEN MPO_SHORT = 'AAMPO' THEN 'SAT'
+        WHEN MPO_SHORT = 'Amarillo MPO' THEN 'AMA'
+        WHEN MPO_SHORT = 'Bryan-College Station MPO' THEN 'BRY'
+        WHEN MPO_SHORT = 'CAMPO MPO' THEN 'AUS'
+        WHEN MPO_SHORT = 'Corpus Christi MPO' THEN 'CRP'
+        WHEN MPO_SHORT = 'Eagle Pass MPO' THEN 'LRD'
+        WHEN MPO_SHORT = 'El Paso MPO' THEN 'ELP'
+        WHEN MPO_SHORT = 'Grayson County MPO' THEN 'PAR'
+        WHEN MPO_SHORT = 'HGAC MPO' THEN 'HOU/BMT'
+        WHEN MPO_SHORT = 'Killeen-Temple MPO' THEN 'WAC'
+        WHEN MPO_SHORT = 'Laredo Webb County Area MPO' THEN 'LRD'
+        WHEN MPO_SHORT = 'Longview MPO' THEN 'TYL'
+        WHEN MPO_SHORT = 'Lubbock MPO' THEN 'LBB'
+        WHEN MPO_SHORT = 'NCTCOG MPO' THEN 'DAL/FTW/PAR'
+        WHEN MPO_SHORT = 'Permian Basin MPO' THEN 'ODA'
+        WHEN MPO_SHORT = 'Rio Grande Valley MPO' THEN 'PHR'
+        WHEN MPO_SHORT = 'San Angelo MPO' THEN 'SJT'
+        WHEN MPO_SHORT = 'SETRPC MPO' THEN 'BMT'
+        WHEN MPO_SHORT = 'Texarkana MPO' THEN 'ATL'
+        WHEN MPO_SHORT = 'Tyler MPO' THEN 'TYL'
+        WHEN MPO_SHORT = 'Victoria MPO' THEN 'YKM'
+        WHEN MPO_SHORT = 'Waco MPO' THEN 'WAC'
+        WHEN MPO_SHORT = 'Wichita Falls MPO' THEN 'WFS'
+        ELSE ''
+    END;
+
+UPDATE REF.MPO_REFERENCE
+SET CHANGE_ORDERS_MPO =
+    CASE
+        WHEN MPO_SHORT = 'Abilene MPO' THEN ''
+        WHEN MPO_SHORT = 'AAMPO' THEN '[SAT] San Antonio-Bexar Cnty TMA'
+        WHEN MPO_SHORT = 'Amarillo MPO' THEN ''
+        WHEN MPO_SHORT = 'Bryan-College Station MPO' THEN '[BRY] Bryan-College Station MPO'
+        WHEN MPO_SHORT = 'CAMPO MPO' THEN '[AUS] CAMPO TMA'
+        WHEN MPO_SHORT = 'Corpus Christi MPO' THEN ''
+        WHEN MPO_SHORT = 'Eagle Pass MPO' THEN ''
+        WHEN MPO_SHORT = 'El Paso MPO' THEN '[ELP] El Paso TMA'
+        WHEN MPO_SHORT = 'Grayson County MPO' THEN ''
+        WHEN MPO_SHORT = 'HGAC MPO' THEN '[BMT & HOU] HGAC TMA'
+        WHEN MPO_SHORT = 'Killeen-Temple MPO' THEN '[WAC] Killeen-Temple MPO'
+        WHEN MPO_SHORT = 'Laredo Webb County Area MPO' THEN ''
+        WHEN MPO_SHORT = 'Longview MPO' THEN ''
+        WHEN MPO_SHORT = 'Lubbock MPO' THEN ''
+        WHEN MPO_SHORT = 'NCTCOG MPO' THEN '[DAL,FTW,PAR] NCTCOG TMA'
+        WHEN MPO_SHORT = 'Permian Basin MPO' THEN ''
+        WHEN MPO_SHORT = 'Rio Grande Valley MPO' THEN ''
+        WHEN MPO_SHORT = 'San Angelo MPO' THEN '[SJT] San Angelo MPO'
+        WHEN MPO_SHORT = 'SETRPC MPO' THEN ''
+        WHEN MPO_SHORT = 'Texarkana MPO' THEN ''
+        WHEN MPO_SHORT = 'Tyler MPO' THEN '[TYL] Tyler MPO'
+        WHEN MPO_SHORT = 'Victoria MPO' THEN '[YKM] Victoria MPO'
+        WHEN MPO_SHORT = 'Waco MPO' THEN ''
+        WHEN MPO_SHORT = 'Wichita Falls MPO' THEN ''
+        ELSE ''
+    END;
+
+-- 1 Case left to handle: [BMT] JHORTS MPO
