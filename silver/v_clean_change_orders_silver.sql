@@ -134,6 +134,7 @@ change_orders_final AS (
         END AS District_MPO_Division,
         METRIC_VALUE
     FROM co_update_mpo
+    WHERE CATEGORY != '3' -- Exclude category 3 as per the requirement
 )
 
 SELECT DISTINCT
