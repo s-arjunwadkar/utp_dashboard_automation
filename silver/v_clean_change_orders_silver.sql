@@ -139,7 +139,10 @@ change_orders_final AS (
 
 SELECT DISTINCT
     DISTRICT,
-    District_MPO_Division,
+    CASE
+        WHEN DISTRICT = '[BMT] JHORTS MPO' THEN 'HOU/BMT - HGAC MPO'
+        ELSE District_MPO_Division
+    END AS District_MPO_Division,
     CATEGORY_NEW AS CATEGORY,
     METRIC_NAME,
     METRIC_VALUE AS CHANGE_ORDERS_AMOUNT
