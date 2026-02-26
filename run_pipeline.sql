@@ -7,9 +7,11 @@ USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
 !source bronze/v_load_current_analysis_bronze.sql;
 !source bronze/v_load_cost_overruns_bronze.sql;
 !source bronze/dt_extract_project_details_bronze.sql;
+!source bronze/t_change_orders_refresh_bronze.sql;
 
 -- Silver Layer
 !source silver/v_join_let_costoverruns_silver.sql;
+!source silver/v_clean_change_orders_silver.sql;
 !source silver/dt_filter_project_details_silver.sql;
 !source silver/dt_join_pd_let_costoverruns_silver.sql;
 !source silver/dt_join_project_details_new_cat_silver.sql;
