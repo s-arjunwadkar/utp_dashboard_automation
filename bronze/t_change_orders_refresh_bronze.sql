@@ -2,6 +2,7 @@ USE ROLE SYSADMIN;
 USE DATABASE SHARVIL_UTP_2026_DASHBOARD;
 USE SCHEMA BRONZE;
 
+EXECUTE IMMEDIATE $$
 BEGIN
   LET co_pattern STRING DEFAULT '.*change_orders.*';
   LET co_create_sql STRING;
@@ -40,6 +41,35 @@ BEGIN
   SET INGESTED_AT = CURRENT_TIMESTAMP()::TIMESTAMP_NTZ
   WHERE INGESTED_AT IS NULL;
 
+  -- 4.5) Build a clean view over RAW_WIDE with sanitized column names
+  LET co_clean_sql STRING;
+
+  SELECT
+    'CREATE OR REPLACE VIEW BRONZE.CHANGE_ORDERS_RAW_WIDE_CLEAN AS SELECT ' ||
+    LISTAGG(
+      CASE
+        -- Force stable canonical names (unquoted) for these two
+        WHEN UPPER(COLUMN_NAME) = 'DISTRICT'
+          THEN '"' || COLUMN_NAME || '" AS DISTRICT'
+        WHEN UPPER(COLUMN_NAME) = 'INGESTED_AT'
+          THEN '"' || COLUMN_NAME || '" AS INGESTED_AT'
+
+        -- Everything else: sanitize the header into a stable alias
+        ELSE
+          '"' || COLUMN_NAME || '" AS "' ||
+          REPLACE(REPLACE(COLUMN_NAME, ' - ', '_'), ' ', '_') ||
+          '"'
+      END
+    , ', ')
+    || ' FROM BRONZE.CHANGE_ORDERS_RAW_WIDE;'
+  INTO :co_clean_sql
+  FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_CATALOG = CURRENT_DATABASE()
+    AND TABLE_SCHEMA  = 'BRONZE'
+    AND TABLE_NAME    = 'CHANGE_ORDERS_RAW_WIDE';
+
+  EXECUTE IMMEDIATE :co_clean_sql;
+
   -- 5) Build dynamic UNPIVOT (exclude DISTRICT + INGESTED_AT), cast amounts to DOUBLE, default 0
   SELECT
     'CREATE OR REPLACE TABLE BRONZE.CHANGE_ORDERS_LONG AS
@@ -48,7 +78,7 @@ BEGIN
        metric_name,
        COALESCE(TRY_TO_DOUBLE(metric_value), 0) AS metric_value,
        INGESTED_AT
-     FROM BRONZE.CHANGE_ORDERS_RAW_WIDE
+     FROM BRONZE.CHANGE_ORDERS_RAW_WIDE_CLEAN
      UNPIVOT(metric_value FOR metric_name IN (' ||
      LISTAGG('"' || COLUMN_NAME || '"', ', ') ||
      '));'
@@ -56,7 +86,7 @@ BEGIN
   FROM INFORMATION_SCHEMA.COLUMNS
   WHERE TABLE_CATALOG = CURRENT_DATABASE()
     AND TABLE_SCHEMA  = 'BRONZE'
-    AND TABLE_NAME    = 'CHANGE_ORDERS_RAW_WIDE'
+    AND TABLE_NAME    = 'CHANGE_ORDERS_RAW_WIDE_CLEAN'
     AND COLUMN_NAME NOT IN ('DISTRICT', 'INGESTED_AT');
 
   EXECUTE IMMEDIATE :co_unpivot_sql;
@@ -65,4 +95,7 @@ BEGIN
   CREATE OR REPLACE VIEW BRONZE.CHANGE_ORDERS AS
   SELECT * FROM BRONZE.CHANGE_ORDERS_LONG;
 
+  RETURN 'OK - change orders refreshed';
+
 END;
+$$;
