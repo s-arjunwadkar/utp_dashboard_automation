@@ -26,7 +26,7 @@ def main():
     init_sql = base_dir / "t_init_targets_carryovers_bronze.sql"
 
     # Define file path
-    file_path = Path(r"C:\Users\S-Arjunwadkar\Downloads\UTP_Dashboard_Project\input_files\2026_Carryover_TTI_v44.csv")
+    file_path = Path(r"C:\Users\S-Arjunwadkar\Downloads\UTP_Dashboard_Project\input_files\2026_Carryover_TTI_v45.csv")
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
     
