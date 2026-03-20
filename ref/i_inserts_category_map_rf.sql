@@ -37,6 +37,7 @@ VALUES ('1',  NULL, NULL, NULL, NULL, '1',    'District', 'Cat 1 ⇒ District'),
        ('9', NULL, NULL, 'SRS', NULL, '9',  'Division', 'PID with SRS ⇒ TASA Flex'),
        ('9', NULL, '.*JA$', NULL, NULL, '9',  'Division', 'Any WP ending with JA ⇒ TASA Flex IIJA'),
        ('9', NULL, '.*TP$', NULL, NULL, '9',  'Division', 'Any WP ending with TP and PID is TP or PID <> TM or is NULL ⇒ PTN TASA'),
+       ('9', 'FRH09M', NULL, NULL, NULL, '9',  'MPO', 'A new work program is added.'),
        
 -- 10 — 10CR splits + temporary default “rest = Statewide”
        ('10', '10CBNM', NULL, NULL, NULL, '10CR', 'MPO',    '10CR MPO program'),
@@ -77,3 +78,8 @@ VALUES ('1',  NULL, NULL, NULL, NULL, '1',    'District', 'Cat 1 ⇒ District'),
        
 -- SELECT * FROM REF.CATEGORY_MAP;
 -- DROP TABLE IF EXISTS REF.CATEGORY_MAP;
+
+-- INSERT INTO REF.CATEGORY_MAP
+-- (category_parent, work_program_exact, work_program_regex, pid_exact, pid_regex,
+--  new_category, org_scope, comments, is_active, valid_from, valid_to)
+-- VALUES ('9', 'FRH09M', NULL, NULL, NULL, '9',  'MPO', 'A new work program is added.', TRUE, CURRENT_TIMESTAMP(), NULL);
