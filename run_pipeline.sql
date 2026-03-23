@@ -25,5 +25,6 @@ USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
 
 !source silver/v_join_project_details_targets_silver.sql;
 !source silver/v_joined_pd_t_with_exceptions_silver.sql;
+!source silver/v_join_pd_all_change_orders_silver.sql;
 
 SELECT 'Pipeline executed successfully at ' || CURRENT_TIMESTAMP();

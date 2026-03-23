@@ -130,6 +130,8 @@ change_orders_final AS (
             WHEN METRIC_NAME ILIKE '9_TAP_ST%' THEN 'Transportation Alternatives Program - Non-TMAs'
             WHEN METRIC_NAME ILIKE '8_%' THEN 'Traffic Division'
             WHEN METRIC_NAME ILIKE '6_%' THEN 'Bridge Division'
+            WHEN METRIC_NAME ILIKE '12_Clear%' THEN 'Statewide Strategic Priority (Clear Lanes)'
+            WHEN METRIC_NAME ILIKE '12_TTC' THEN 'Statewide Strategic Priority'
             ELSE CONCAT(DISTRICT_DIVISION_ABBR, ' - ', DISTRICT_MPO_NEW)
         END AS District_MPO_Division,
         METRIC_VALUE
