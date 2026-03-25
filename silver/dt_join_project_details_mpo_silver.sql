@@ -95,6 +95,5 @@ COMMENT = 'This table captures all the projects which have org scope as MPO but 
 AS
 SELECT *
 FROM SILVER.PD_MPO_SHORT
-WHERE (org_scope = 'MPO' AND mpo_description IS NULL) OR org_scope IS NULL;
-
--- SELECT * FROM SILVER.PD_MPO_SHORT;
+WHERE (org_scope = 'MPO' AND mpo_description IS NULL) OR org_scope IS NULL
+ORDER BY category, district_division, estimated_fiscal_year;
