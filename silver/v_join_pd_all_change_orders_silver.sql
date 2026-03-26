@@ -12,13 +12,26 @@ WITH final_w_o_fy26 AS (
     WHERE FY != 2026
 ),
 
+pd_only_26 AS (
+    SELECT *
+    FROM SILVER.TOTAL_WITH_EXCPN_VIEW
+    WHERE fy = 2026
+),
+
 with_change_orders AS (
-    SELECT m.*, c.CHANGE_ORDERS_AMOUNT
-    FROM SILVER.TOTAL_WITH_EXCPN_VIEW AS m
-    LEFT JOIN SILVER.V_CHANGE_ORDERS_SILVER AS c
+    SELECT 
+        COALESCE(m.category, c.category) AS category,
+        COALESCE(m.district_mpo_division, c.district_mpo_division) AS district_mpo_division,
+        COALESCE(m.fy, 2026) AS fy,
+        COALESCE(m.total_authorized_amount, 0) AS total_authorized_amount,
+        COALESCE(m.total_targets, 0) AS total_targets,
+        COALESCE(m.carryovers, 0) AS carryovers,
+        COALESCE(m.targets_carryovers_combined, 0) AS targets_carryovers_combined,
+        COALESCE(c.change_orders_amount, 0) AS change_orders_amount
+    FROM pd_only_26 AS m
+    FULL OUTER JOIN SILVER.V_CHANGE_ORDERS_SILVER AS c
     ON m.category = c.category
     AND LOWER(m.district_mpo_division) = LOWER(c.district_mpo_division)
-    WHERE FY = 2026
 ),
 
 agg_with_co AS (

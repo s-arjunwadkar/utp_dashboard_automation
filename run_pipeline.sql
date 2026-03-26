@@ -16,6 +16,7 @@ USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
 !source silver/dt_join_pd_let_costoverruns_silver.sql;
 !source silver/dt_join_project_details_new_cat_silver.sql;
 !source silver/dt_join_project_details_mpo_silver.sql;
+!source silver/v_select_pd_pre_output_silver.sql;
 
 !source silver/v_agg_total_targets_silver.sql;
 !source silver/v_join_targets_scope_silver.sql;

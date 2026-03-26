@@ -95,7 +95,7 @@ SELECT
     CASE
         WHEN co.DISTRICT = mpo.change_orders_mpo AND mpo.change_orders_mpo != '' THEN mpo.mpo_short
         WHEN co.DISTRICT = '[BMT] JHORTS MPO' THEN 'HGAC MPO'
-        ELSE co.DISTRICT
+        ELSE INITCAP(co.DISTRICT, '')
     END AS DISTRICT_MPO_NEW,
     co.CATEGORY,
     co.METRIC_NAME,
@@ -124,14 +124,14 @@ change_orders_final AS (
         CASE
             WHEN METRIC_NAME ILIKE '11_COCO' THEN 'Cost Overruns/Change Orders'
             WHEN METRIC_NAME ILIKE '11_RI%' THEN 'Rider 11B Program'
-            -- WHEN METRIC_NAME ILIKE '11_PES' THEN 'Statewide - Cat 11ES' -- Needs to be updated as it should be district!!
+            -- WHEN METRIC_NAME ILIKE '11_PES' THEN 'Statewide - Cat 11ES' -- it should be district!!
             WHEN METRIC_NAME ILIKE '10_S%' THEN 'Supplemental Transportation Projects' 
             WHEN METRIC_NAME ILIKE '9_TAP_F%' THEN 'Transportation Alternatives Flex Program'
             WHEN METRIC_NAME ILIKE '9_TAP_ST%' THEN 'Transportation Alternatives Program - Non-TMAs'
             WHEN METRIC_NAME ILIKE '8_%' THEN 'Traffic Division'
             WHEN METRIC_NAME ILIKE '6_%' THEN 'Bridge Division'
-            WHEN METRIC_NAME ILIKE '12_Clear%' THEN 'Statewide Strategic Priority (Clear Lanes)'
-            WHEN METRIC_NAME ILIKE '12_TTC' THEN 'Statewide Strategic Priority'
+            -- WHEN METRIC_NAME ILIKE '12_Clear%' THEN 'Statewide Strategic Priority (Clear Lanes)' -- All 12 should be by district.
+            -- WHEN METRIC_NAME ILIKE '12_TTC' THEN 'Statewide Strategic Priority'
             ELSE CONCAT(DISTRICT_DIVISION_ABBR, ' - ', DISTRICT_MPO_NEW)
         END AS District_MPO_Division,
         METRIC_VALUE
