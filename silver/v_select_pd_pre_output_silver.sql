@@ -68,8 +68,8 @@ SELECT
     estimated_fiscal_year AS fy,
     let_type_description,
     let_schedule_fiscal_year AS let_sch_fy,
-    authorized_amount AS programmed_charged_amount,
-    orig_authorized_amount AS authorized_amount,
+    authorized_amount,
+    orig_authorized_amount,
     CASE
         WHEN LOWER(TRIM(alternative_delivery)) IN ('yes', 'potential') THEN 'DB'
         ELSE 'DBB'
