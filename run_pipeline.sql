@@ -28,4 +28,10 @@ USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
 !source silver/v_joined_pd_t_with_exceptions_silver.sql;
 !source silver/v_join_pd_all_change_orders_silver.sql;
 
+-- Gold Layer
+!source gold/v_select_csj_level_output_1_gold.sql;
+!source gold/v_select_cat_dist_mpo_level_output_2_gold.sql;
+!source gold/v_select_variance_report_gold.sql;
+
+
 SELECT 'Pipeline executed successfully at ' || CURRENT_TIMESTAMP();

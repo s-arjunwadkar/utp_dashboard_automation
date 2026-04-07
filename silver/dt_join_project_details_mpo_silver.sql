@@ -93,7 +93,12 @@ CREATE OR REPLACE DYNAMIC TABLE SILVER.PD_MISSING_MPO_DESC
   DATA_RETENTION_TIME_IN_DAYS = 1
 COMMENT = 'This table captures all the projects which have org scope as MPO but missing mpo description.'
 AS
-SELECT *
+SELECT *,
+    CASE
+        WHEN work_program_code NOT ILIKE '%' || category || '%' THEN 'Category & Work Program Mismatch'
+        WHEN (org_scope = 'MPO' AND mpo_description IS NULL) THEN 'Missing MPO Description for MPO Category'
+        ELSE 'Other Error, Needs further investigation'
+    END AS error_description
 FROM SILVER.PD_MPO_SHORT
 WHERE (org_scope = 'MPO' AND mpo_description IS NULL) OR org_scope IS NULL
 ORDER BY category, district_division, estimated_fiscal_year;
