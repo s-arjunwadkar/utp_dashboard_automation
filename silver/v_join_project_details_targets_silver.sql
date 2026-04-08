@@ -17,5 +17,3 @@ FULL OUTER JOIN SILVER.NORMAL_TARGETS AS tg
 ON pd.category = tg.category AND pd.district_mpo_division = tg.district_mpo_division AND pd.estimated_fiscal_year = tg.fy
 ORDER BY category, district_mpo_division, fy
 ;
-
--- SELECT * FROM SILVER.JOINED_PD_TARGET_VIEW;
