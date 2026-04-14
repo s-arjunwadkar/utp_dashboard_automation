@@ -10,7 +10,7 @@ def main():
         account="TAM-PPM",
         user="S-ARJUNWADKAR@TTI.TAMU.EDU",
         warehouse="SHARVIL_UTP_DASHBOARD",
-        database="SHARVIL_UTP_2026_DASHBOARD",
+        database="UTP_DASHBOARD",
         schema="BRONZE",
         role="SYSADMIN",
         authenticator="externalbrowser",
