@@ -1,6 +1,6 @@
 USE DATABASE UTP_DASHBOARD;
 USE SCHEMA SILVER;
-USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
+USE WAREHOUSE UTP_DASHBOARD_WH;
 
 CREATE OR REPLACE VIEW UTP_DASHBOARD.SILVER.V_CHANGE_ORDERS_SILVER
 COMMENT = 'View to clean and categorize the change orders data from bronze layer. It includes logic to group certain metrics, update district names using project details table and join with MPO reference table to get the correct MPO names and district abbreviations.' 

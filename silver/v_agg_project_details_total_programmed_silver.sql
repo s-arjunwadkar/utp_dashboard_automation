@@ -1,5 +1,5 @@
 USE DATABASE UTP_DASHBOARD;
-USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
+USE WAREHOUSE UTP_DASHBOARD_WH;
 
 CREATE OR REPLACE VIEW SILVER.PD_TOTAL_PROGRAMMED
 COMMENT = 'This view creates a new attribute district_mpo_division and then calculates total programmed amount per category per district_mpo_division per estimated_fiscal_year.'

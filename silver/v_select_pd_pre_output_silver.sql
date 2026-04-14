@@ -1,5 +1,5 @@
 USE DATABASE UTP_DASHBOARD;
-USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
+USE WAREHOUSE UTP_DASHBOARD_WH;
 
 CREATE OR REPLACE VIEW SILVER.V_PD_PRE_OUTPUT
 COMMENT = 'This view creates a new attribute district_mpo_division and then selects relevant attributes for the pre output layer of project details.'

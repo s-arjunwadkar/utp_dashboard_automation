@@ -1,5 +1,5 @@
 USE DATABASE UTP_DASHBOARD;
-USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
+USE WAREHOUSE UTP_DASHBOARD_WH;
 
 CREATE OR REPLACE VIEW SILVER.NORMAL_TARGETS
 COMMENT = 'These are the records from targets and carryover file where the organization scope matches the expected scope.'

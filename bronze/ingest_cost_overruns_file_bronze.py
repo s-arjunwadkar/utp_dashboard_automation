@@ -9,7 +9,7 @@ def main():
     config = SnowflakeConfig(
         account="TAM-PPM",
         user="S-ARJUNWADKAR@TTI.TAMU.EDU",
-        warehouse="SHARVIL_UTP_DASHBOARD",
+        warehouse="UTP_DASHBOARD_WH",
         database="UTP_DASHBOARD",
         schema="BRONZE",
         role="SYSADMIN",

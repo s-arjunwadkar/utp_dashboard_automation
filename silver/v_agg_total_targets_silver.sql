@@ -1,5 +1,5 @@
 USE DATABASE UTP_DASHBOARD;
-USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
+USE WAREHOUSE UTP_DASHBOARD_WH;
 
 CREATE OR REPLACE VIEW SILVER.TOTAL_TARGETS
 COMMENT = 'Unpivot the targets and carryover file and calculate total targets by each category, district_mpo_division and FY.'

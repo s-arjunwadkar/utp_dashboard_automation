@@ -1,5 +1,5 @@
 USE DATABASE UTP_DASHBOARD;
-USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
+USE WAREHOUSE UTP_DASHBOARD_WH;
 
 CREATE OR REPLACE VIEW SILVER.TARGETS_SCOPE 
 COMMENT = 'Remove Carryover records for FY other than 2026, Add organization scope to the file for each category' 

@@ -1,9 +1,9 @@
 USE DATABASE UTP_DASHBOARD;
-USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
+USE WAREHOUSE UTP_DASHBOARD_WH;
 
 CREATE OR REPLACE DYNAMIC TABLE SILVER.PD_MPO_SHORT
   TARGET_LAG = DOWNSTREAM
-  WAREHOUSE  = SHARVIL_UTP_DASHBOARD
+  WAREHOUSE  = UTP_DASHBOARD_WH
   DATA_RETENTION_TIME_IN_DAYS = 1
 COMMENT = 'This table brings mpo short forms from mpo reference table. However, before doing that the South East Texas Regional Planning Commission which is coming from the source has special character which is not explicitly visible without generating HEX ENCODE. First that was handled.'
 AS
@@ -89,7 +89,7 @@ ON TRIM(LOWER(pd.mpo_description)) = TRIM(LOWER(mpo.mpo_description))
 
 CREATE OR REPLACE DYNAMIC TABLE SILVER.PD_MISSING_MPO_DESC
   TARGET_LAG = '1 day'
-  WAREHOUSE  = SHARVIL_UTP_DASHBOARD
+  WAREHOUSE  = UTP_DASHBOARD_WH
   DATA_RETENTION_TIME_IN_DAYS = 1
 COMMENT = 'This table captures all the projects which have org scope as MPO but missing mpo description.'
 AS

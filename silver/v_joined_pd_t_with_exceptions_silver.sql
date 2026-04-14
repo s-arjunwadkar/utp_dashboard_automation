@@ -1,5 +1,5 @@
 USE DATABASE UTP_DASHBOARD;
-USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
+USE WAREHOUSE UTP_DASHBOARD_WH;
 
 CREATE OR REPLACE VIEW SILVER.TOTAL_WITH_EXCPN_VIEW
 COMMENT = 'This tables appends the exceptions in target file to the joined project details and targets table.'

@@ -1,6 +1,6 @@
 USE ROLE SYSADMIN;
 USE DATABASE UTP_DASHBOARD;
-USE WAREHOUSE SHARVIL_UTP_DASHBOARD;
+USE WAREHOUSE UTP_DASHBOARD_WH;
 
 -- Bronze Layer
 !source bronze/v_load_targets_carryovers_bronze.sql;
