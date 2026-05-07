@@ -1,0 +1,13 @@
+USE ROLE SYSADMIN;
+USE DATABASE UTP_DASHBOARD;
+USE WAREHOUSE UTP_DASHBOARD_WH;
+USE SCHEMA SILVER;
+
+CREATE OR REPLACE TASK SILVER.REFRESH_FINAL_DT_TASK
+  WAREHOUSE = UTP_DASHBOARD_WH
+  SCHEDULE = 'USING CRON 57 5 * * * America/Chicago'
+  COMMENT = 'Task to refresh all dynamic tables at 5:57 AM every day. This dynamic table is the most downstream one, therefore all others refresh automatically when this one is refreshed.'
+AS
+  ALTER DYNAMIC TABLE SILVER.PD_MISSING_MPO_DESC REFRESH;
+
+ALTER TASK UTP_DASHBOARD.SILVER.REFRESH_FINAL_DT_TASK RESUME;
