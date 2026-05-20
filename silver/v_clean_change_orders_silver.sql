@@ -40,17 +40,19 @@ GROUP BY DISTRICT
 co_10_group AS (
 SELECT
     DISTRICT,
-    '10_SUPPLEMENTAL' AS METRIC_NAME,
+    '10_OTHER' AS METRIC_NAME,
     SUM(METRIC_VALUE) AS METRIC_VALUE
 FROM change_orders_init
-WHERE METRIC_NAME ILIKE '10%'
+WHERE METRIC_NAME ILIKE '10_%' 
+    AND NOT METRIC_NAME ILIKE ANY ('10_ADA', '10_FB', '10_GR', '10_LIA', '10_RGC', '10_RGS', '10_TPW', '10_Safety%', '10_Seaport%', '10_SCP', '10_ITD', '10_EAR')
 GROUP BY DISTRICT
 ),
 
 co_intermediate AS (
 SELECT *
 FROM change_orders_init
-WHERE NOT METRIC_NAME ILIKE ANY ('2%', '8%', '10%')
+WHERE NOT METRIC_NAME ILIKE ANY ('2%', '8%') AND NOT (METRIC_NAME ILIKE '10_%' 
+    AND NOT METRIC_NAME ILIKE ANY ('10_ADA', '10_FB', '10_GR', '10_LIA', '10_RGC', '10_RGS', '10_TPW', '10_Safety%', '10_Seaport%', '10_SCP', '10_ITD', '10_EAR'))
 UNION ALL
 SELECT *
 FROM co_2_group
@@ -117,21 +119,30 @@ change_orders_final AS (
             WHEN CATEGORY = '4' AND METRIC_NAME ILIKE '4_U%' THEN '4U'
             WHEN CATEGORY = '4' AND METRIC_NAME ILIKE '4_R%' THEN '4R'
             WHEN CATEGORY = '11' AND METRIC_NAME ILIKE '11_DISTRICT_SAF%' THEN '11SF'
-            WHEN CATEGORY = '11' AND METRIC_NAME ILIKE '11_PES' THEN '11ES'
+            WHEN CATEGORY = '11' AND METRIC_NAME ILIKE '11_PES' THEN '11ES' 
+            WHEN CATEGORY = '11' AND METRIC_NAME ILIKE '11_DISTRICT_Dis%' THEN '11DD'
+            WHEN CATEGORY = '11' AND METRIC_NAME ILIKE '11_RI%' THEN '11B'
+            WHEN CATEGORY = '11' AND METRIC_NAME ILIKE '11_CO%' THEN '11CO'
+            WHEN CATEGORY = '10' AND METRIC_NAME ILIKE '10_ADA' THEN '10ADA'
+            WHEN CATEGORY = '10' AND METRIC_NAME ILIKE '10_FB' THEN '10FB'
+            WHEN CATEGORY = '10' AND METRIC_NAME ILIKE '10_GR' THEN '10GR'
+            WHEN CATEGORY = '10' AND METRIC_NAME ILIKE '10_LIA' THEN '10LIA'
+            WHEN CATEGORY = '10' AND METRIC_NAME ILIKE '10_RGC' THEN '10RGC'
+            WHEN CATEGORY = '10' AND METRIC_NAME ILIKE '10_RGS' THEN '10RGS'
+            WHEN CATEGORY = '10' AND METRIC_NAME ILIKE '10_TPW' THEN '10TPW'
+            WHEN CATEGORY = '10' AND METRIC_NAME ILIKE '10_Safety%' THEN '10SRATP'
+            WHEN CATEGORY = '10' AND METRIC_NAME ILIKE ANY ('10_SCP', '10_Seaport%') THEN '10SCP'
+            WHEN CATEGORY = '10' AND METRIC_NAME ILIKE '10_ITD' THEN '10ITD'
+            WHEN CATEGORY = '10' AND METRIC_NAME ILIKE '10_EAR' THEN '10EAR'
+            WHEN CATEGORY = '10' AND NOT METRIC_NAME ILIKE ANY ('10_ADA', '10_FB', '10_GAR', '10_LIA', '10_RGC', '10_RGS', '10_TPW', '10_Safety%', '10_Seaport%', '10_SCP', '10_ITD', '10_EAR') THEN '10OTHER'
             ELSE CATEGORY
         END AS CATEGORY_NEW,
         METRIC_NAME,
         CASE
-            WHEN METRIC_NAME ILIKE '11_COCO' THEN 'Cost Overruns/Change Orders'
-            WHEN METRIC_NAME ILIKE '11_RI%' THEN 'Rider 11B Program'
-            -- WHEN METRIC_NAME ILIKE '11_PES' THEN 'Statewide - Cat 11ES' -- it should be district!!
-            WHEN METRIC_NAME ILIKE '10_S%' THEN 'Supplemental Transportation Projects' 
             WHEN METRIC_NAME ILIKE '9_TAP_F%' THEN 'Transportation Alternatives Flex Program'
             WHEN METRIC_NAME ILIKE '9_TAP_ST%' THEN 'Transportation Alternatives Program - Non-TMAs'
             WHEN METRIC_NAME ILIKE '8_%' THEN 'Traffic Division'
             WHEN METRIC_NAME ILIKE '6_%' THEN 'Bridge Division'
-            -- WHEN METRIC_NAME ILIKE '12_Clear%' THEN 'Statewide Strategic Priority (Clear Lanes)' -- All 12 should be by district.
-            -- WHEN METRIC_NAME ILIKE '12_TTC' THEN 'Statewide Strategic Priority'
             ELSE CONCAT(DISTRICT_DIVISION_ABBR, ' - ', DISTRICT_MPO_NEW)
         END AS District_MPO_Division,
         METRIC_VALUE

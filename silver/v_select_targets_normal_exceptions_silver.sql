@@ -14,11 +14,10 @@ SELECT DISTINCT
         expected_org_type
 FROM SILVER.TARGETS_SCOPE
 WHERE LOWER(org_type) = LOWER(expected_org_type)
-    OR (category ='11' AND LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'division')
+    OR (category = '11DD' AND LOWER(org_type) = 'statewide' AND LOWER(expected_org_type) = 'district')
     OR (category ='6' AND LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'statewide')
     OR (category ='8' AND LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'statewide')
     OR (category ='9' AND LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'division')
-    OR (category ='10' AND LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'statewide')
     OR (category ='10CR' AND LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'statewide')
 ORDER BY category, district_mpo_division, fy;
 
@@ -61,6 +60,21 @@ cat_4r_12_table AS (
   GROUP BY category, district_mpo_division, fy, org_type, expected_org_type
 ),
 
+cat_10_11_subprograms_table AS (
+  SELECT DISTINCT 
+    category,
+    district_mpo_division,
+    fy,
+    SUM(carryovers) AS carryovers,
+    SUM(total_targets) AS total_targets,
+    org_type,
+    expected_org_type
+  FROM exceptions_table
+  WHERE (category IN ('10ADA', '10FB', '10GR', '10LIA', '10RGC', '10RGS', '10TPW', '10SRATP', '10SCP', '10ITD', '10EAR', '10OTHER')
+      AND (LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'district')) OR (category IN ('11B', '11CO') AND (LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'district'))
+  GROUP BY category, district_mpo_division, fy, org_type, expected_org_type
+),
+
 cat_10cr_table AS (
     SELECT DISTINCT
         *
@@ -73,9 +87,8 @@ SELECT * FROM simple_table
 UNION ALL
 SELECT * FROM cat_4r_12_table
 UNION ALL
+SELECT * FROM cat_10_11_subprograms_table
+UNION ALL
 SELECT * FROM cat_10cr_table
 ORDER BY category, district_mpo_division, fy
 ;
-
--- SELECT * FROM SILVER.NORMAL_TARGETS;
--- SELECT * FROM SILVER.EXCEPTION_TARGETS;
