@@ -34,5 +34,3 @@ QUALIFY ROW_NUMBER() OVER (
     IFF(m.work_program_exact IS NOT NULL OR m.pid_exact IS NOT NULL, 3,
         IFF(m.work_program_regex IS NOT NULL OR m.pid_regex IS NOT NULL, 2, 1)) DESC
 ) = 1;
-
--- SELECT * FROM SILVER.V_PD_WITH_NEW_CATEGORY;

@@ -19,10 +19,10 @@ SELECT
         WHEN category = '9' AND (work_program_code ILIKE '%FX' OR pid_code IN ('BRA', 'TE', 'SRS')) THEN 'Transportation Alternatives Flex Program'
         WHEN category = '9' AND work_program_code ILIKE '%JA' THEN 'Transportation Alternatives Flex IIJA Program'
         WHEN category = '9' AND work_program_code ILIKE '%TP' AND (pid_code != 'TM' OR pid_code IS NULL) THEN 'Transportation Alternatives Program - Non-TMAs'
-        WHEN category = '10' THEN 'Supplemental Transportation Projects'
+        -- WHEN category = '10' THEN 'Supplemental Transportation Projects'
         WHEN category = '10CR' AND work_program_code = '10CBNS' THEN 'Carbon Reduction Program - Statewide'
-        WHEN category = '11' AND work_program_code = '16B11' THEN 'Rider 11B Program'
-        WHEN category = '11' AND work_program_code = 'COCO' THEN 'Cost Overruns/Change Orders'
+        -- WHEN category = '11' AND work_program_code = '16B11' THEN 'Rider 11B Program'
+        -- WHEN category = '11' AND work_program_code = 'COCO' THEN 'Cost Overruns/Change Orders'
         ELSE district_division
     END AS district_mpo_division,
     estimated_fiscal_year, 
