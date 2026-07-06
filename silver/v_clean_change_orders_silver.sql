@@ -27,16 +27,6 @@ WHERE METRIC_NAME ILIKE '2%'
 GROUP BY DISTRICT
 ),
 
-co_8_group AS (
-SELECT
-    DISTRICT,
-    '8_TRAFFIC' AS METRIC_NAME,
-    SUM(METRIC_VALUE) AS METRIC_VALUE
-FROM change_orders_init
-WHERE METRIC_NAME ILIKE '8%'
-GROUP BY DISTRICT
-),
-
 co_10_group AS (
 SELECT
     DISTRICT,
@@ -51,14 +41,11 @@ GROUP BY DISTRICT
 co_intermediate AS (
 SELECT *
 FROM change_orders_init
-WHERE NOT METRIC_NAME ILIKE ANY ('2%', '8%') AND NOT (METRIC_NAME ILIKE '10_%' 
+WHERE NOT METRIC_NAME ILIKE ANY ('2%') AND NOT (METRIC_NAME ILIKE '10_%' 
     AND NOT METRIC_NAME ILIKE ANY ('10_ADA', '10_FB', '10_GR', '10_LIA', '10_RGC', '10_RGS', '10_TPW', '10_Safety%', '10_Seaport%', '10_SCP', '10_ITD', '10_EAR'))
 UNION ALL
 SELECT *
 FROM co_2_group
-UNION ALL
-SELECT *
-FROM co_8_group
 UNION ALL
 SELECT *
 FROM co_10_group
@@ -118,6 +105,8 @@ change_orders_final AS (
         CASE
             WHEN CATEGORY = '4' AND METRIC_NAME ILIKE '4_U%' THEN '4U'
             WHEN CATEGORY = '4' AND METRIC_NAME ILIKE '4_R%' THEN '4R'
+            WHEN CATEGORY = '8' AND METRIC_NAME ILIKE '8_Safety' THEN '8SF'
+            WHEN CATEGORY = '8' AND METRIC_NAME ILIKE '8%Rail' THEN '8RX'
             WHEN CATEGORY = '11' AND METRIC_NAME ILIKE '11_DISTRICT_SAF%' THEN '11SF'
             WHEN CATEGORY = '11' AND METRIC_NAME ILIKE '11_PES' THEN '11ES' 
             WHEN CATEGORY = '11' AND METRIC_NAME ILIKE '11_DISTRICT_Dis%' THEN '11DD'
@@ -141,7 +130,6 @@ change_orders_final AS (
         CASE
             WHEN METRIC_NAME ILIKE '9_TAP_F%' THEN 'Transportation Alternatives Flex Program'
             WHEN METRIC_NAME ILIKE '9_TAP_ST%' THEN 'Transportation Alternatives Program - Non-TMAs'
-            WHEN METRIC_NAME ILIKE '8_%' THEN 'Traffic Division'
             WHEN METRIC_NAME ILIKE '6_%' THEN 'Bridge Division'
             ELSE CONCAT(DISTRICT_DIVISION_ABBR, ' - ', DISTRICT_MPO_NEW)
         END AS District_MPO_Division,

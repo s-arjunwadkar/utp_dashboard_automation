@@ -39,7 +39,10 @@ SELECT
     WHEN (ud.district = pd.district_division_new) AND (ud.district_division_abbr != pd.district_division_abbr) THEN ud.district_division_abbr
     ELSE pd.district_division_abbr
   END AS district_division_abbr,
-  pd.district_division_new AS district_division,
+  CASE
+    WHEN pd.district_division = 'Rail Division' THEN district_division
+    ELSE pd.district_division_new
+  END AS district_division,
   pd.mpo_description,
   pd.funding_category,
   pd.authorized_amount,

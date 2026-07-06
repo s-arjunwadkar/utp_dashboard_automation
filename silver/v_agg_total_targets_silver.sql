@@ -16,33 +16,12 @@ SELECT
     category,
     CASE
         WHEN category = '6' THEN 'Bridge Division'
-        WHEN category = '8' THEN 'Traffic Division'
-        WHEN category = '10' THEN 'Supplemental Transportation Projects'
         ELSE district_mpo_division
     END AS district_mpo_division,
     TRIM(SPLIT_PART(FY, '_', 2)) AS fy,
     carryovers,
     targets
 FROM unpivot_targets
-),
-
-cat_8 AS (
-    SELECT
-        category,
-        district_mpo_division,
-        fy,
-        SUM(carryovers) AS carryovers,
-        SUM(targets) AS targets
-    FROM formatted_targets
-    WHERE category = '8'
-    GROUP BY category, district_mpo_division, fy
-),
-
-targets_carryovers AS (
-    SELECT * FROM formatted_targets
-    WHERE category != '8'
-    UNION ALL
-    SELECT * FROM cat_8
 )
 
 SELECT
@@ -51,7 +30,7 @@ SELECT
     fy,
     carryovers,
     SUM(targets) AS total_targets
-FROM targets_carryovers
+FROM formatted_targets
 GROUP BY category, district_mpo_division, fy, carryovers
 ORDER BY category, district_mpo_division, fy
 ;
