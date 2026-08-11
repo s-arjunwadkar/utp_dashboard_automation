@@ -33,5 +33,10 @@ USE WAREHOUSE UTP_DASHBOARD_WH;
 !source gold/v_select_cat_dist_mpo_level_output_2_gold.sql;
 !source gold/v_select_variance_report_gold.sql;
 
+--Run Delta Report Procedure
+!source gold/sp_generate_delta_report_gold.sql;
+CALL GOLD.SP_DELTA_REPORT(FALSE);
+!source gold/v_select_delta_report_gold.sql;
+
 
 SELECT 'Pipeline executed successfully at ' || CURRENT_TIMESTAMP();
