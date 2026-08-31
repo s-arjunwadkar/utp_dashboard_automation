@@ -14,7 +14,8 @@ SELECT
     total_targets,
     carryovers,
     targets_carryovers_combined,
-    change_orders_amount
+    change_orders_amount,
+    CURRENT_TIMESTAMP() AS generated_at
 FROM SILVER.V_JOIN_PD_ALL_CHANGE_ORDERS_SILVER
 ORDER BY category, district_mpo_division, fy;
 
@@ -29,6 +30,7 @@ SELECT
     total_targets,
     carryovers,
     targets_carryovers_combined,
-    change_orders_amount
+    change_orders_amount,
+    CURRENT_TIMESTAMP() AS generated_at
 FROM SILVER.V_JOIN_PD_ALL_CHANGE_ORDERS_SILVER
 ORDER BY category, district_mpo_division, fy;

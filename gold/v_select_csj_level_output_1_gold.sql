@@ -21,7 +21,8 @@ SELECT
     let_sch_fy,
     authorized_amount,
     orig_authorized_amount,
-    db_or_dbb
+    db_or_dbb,
+    CURRENT_TIMESTAMP() AS generated_at
 FROM SILVER.V_PD_PRE_OUTPUT
 ORDER BY district_mpo_division, district, csj, category, fy;
 
@@ -43,6 +44,7 @@ SELECT
     let_sch_fy,
     authorized_amount,
     orig_authorized_amount,
-    db_or_dbb
+    db_or_dbb,
+    CURRENT_TIMESTAMP() AS generated_at
 FROM SILVER.V_PD_PRE_OUTPUT
 ORDER BY district_mpo_division, district, csj, category, fy;

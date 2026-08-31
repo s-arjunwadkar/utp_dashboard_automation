@@ -14,7 +14,7 @@ CREATE OR REPLACE TABLE BRONZE.COSTOVERRUNS (
     FUNDING_APPROVAL_STATUS_DESCRIPTION     VARCHAR,
     FIXED_FUNDS                             VARCHAR,
     FUNDING_CATEGORY                        VARCHAR,
-    WORKP_ROGRAM_CODE                       VARCHAR,
+    WORK_PROGRAM_CODE                       VARCHAR,
     ESTIMATED_FISCAL_YEAR                   NUMBER(4,0),
     Filter_for_2_4_12_CSJ                   VARCHAR,
     FUNDING_GROUP_NAME                      VARCHAR,

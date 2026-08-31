@@ -6,7 +6,8 @@ USE ROLE SYSADMIN;
 CREATE OR REPLACE VIEW GOLD.V_VARIANCE_REPORT_GOLD
 COMMENT = 'This view provides the output at a CSJ level to be connected to Tableau for the dashboard. It provides information about the errors discovered in the process and information about the error, csj, etc.' 
 AS
-SELECT *
+SELECT *,
+    CURRENT_TIMESTAMP() AS generated_at
 FROM SILVER.PD_MISSING_MPO_DESC
 WHERE category != '3'
 ORDER BY category, district_division, estimated_fiscal_year;
@@ -14,7 +15,8 @@ ORDER BY category, district_division, estimated_fiscal_year;
 CREATE OR REPLACE SECURE VIEW GOLD.SECURE_V_VARIANCE_REPORT_GOLD
 COMMENT = 'This secure view provides the output at a CSJ level to be connected to Tableau for the dashboard. It provides information about the errors discovered in the process and information about the error, csj, etc.' 
 AS
-SELECT *
+SELECT *,
+    CURRENT_TIMESTAMP() AS generated_at
 FROM SILVER.PD_MISSING_MPO_DESC
 WHERE category != '3'
 ORDER BY category, district_division, estimated_fiscal_year;

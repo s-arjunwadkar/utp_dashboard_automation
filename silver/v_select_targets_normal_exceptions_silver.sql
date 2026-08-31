@@ -54,8 +54,8 @@ cat_4r_12_table AS (
     org_type,
     expected_org_type
   FROM exceptions_table
-  WHERE (category IN ('12CL', '12TTC')
-      AND (LOWER(org_type) = 'other' AND LOWER(expected_org_type) = 'district'))
+  WHERE (category IN ('12CL', '12TTC', '12OTHER')
+      AND (LOWER(org_type) IN ('other', 'statewide') AND LOWER(expected_org_type) = 'district'))
       OR (category = '4R'
       AND (LOWER(org_type) = 'statewide' AND LOWER(expected_org_type) = 'district'))
   GROUP BY category, district_mpo_division, fy, org_type, expected_org_type
